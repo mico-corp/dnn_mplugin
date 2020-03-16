@@ -90,7 +90,7 @@ target_include_directories(${PLUGIN_NAME}
 )
 
 target_link_libraries(${PLUGIN_NAME} LINK_PUBLIC darknet)
-
+target_link_libraries(${PLUGIN_NAME} LINK_PUBLIC stdc++fs)
 ##################################################
 ######    Library.                        ########
 ##################################################

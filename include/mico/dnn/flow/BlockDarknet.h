@@ -30,7 +30,6 @@
     #include <mico/dnn/map3d/Entity.h>
     #include <pcl/filters/filter.h>
 #endif
-#include <experimental/filesystem>
 
 namespace dnn{
 

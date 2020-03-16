@@ -31,8 +31,8 @@ namespace dnn{
     extern "C" flow::PluginNodeCreator* factory(){
             flow::PluginNodeCreator *creator = new flow::PluginNodeCreator;
 
-            creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockDarknet>>();               }, "DNN");
-            creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<BlockEntityDatabase>>();        }, "DNN");
+            creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<dnn::BlockDarknet>>();               }, "DNN");
+            creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<dnn::BlockEntityDatabase>>();        }, "DNN");
 
             return creator;
         }
