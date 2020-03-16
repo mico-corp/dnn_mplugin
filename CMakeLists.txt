@@ -80,13 +80,8 @@ target_compile_definitions(${PLUGIN_NAME} PUBLIC GPU)
 
 target_include_directories(${PLUGIN_NAME}
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/darknet/include>
-    $<INSTALL_INTERFACE:ThirdParty/darknet/include>
-)
-target_include_directories(${PLUGIN_NAME}
-  PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/darknet/src>
-    $<INSTALL_INTERFACE:ThirdParty/darknet/src>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}include/darknet>
+    $<INSTALL_INTERFACE:include/darknet>
 )
 
 target_link_libraries(${PLUGIN_NAME} LINK_PUBLIC darknet)
