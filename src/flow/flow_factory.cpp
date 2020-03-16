@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------------------------------------------
-//  MICO DVS plugin
+// mico-dnn 
 //---------------------------------------------------------------------------------------------------------------------
-//  Copyright 2020 - Marco Montes Grova (a.k.a. mgrova) marrcogrova@gmail.com 
+//  Copyright 2020 - Ricardo Lopez Lopez (a.k.a. ricloplop) ricloplop@gmail.com 
 //---------------------------------------------------------------------------------------------------------------------
 //  Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
 //  and associated documentation files (the "Software"), to deal in the Software without restriction, 
