@@ -71,7 +71,6 @@ namespace dnn {
                 }
             }
         }
-        std::cout << std::endl << std::endl;
         // Intersections between actual polyhedron facets vs edges of convex
         // polyedron
         for (auto facet : convexPolyhedronFacets) {

@@ -155,21 +155,21 @@ namespace dnn{
 
                                                         e->projections(df->id(), entityProjections);
                                                         if(entityCloud->size() > 400){
-
+                                                            std::cout << "[BlockDarknet]Starting radius removal" << std::endl;
                                                             pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_out(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
 
                                                             // radius filtering
                                                             pcl::RadiusOutlierRemoval<pcl::PointXYZRGBNormal> rorfilter (true); // Initializing with true will allow us to extract the removed indices
                                                             rorfilter.setInputCloud (entityCloud);
                                                             rorfilter.setRadiusSearch (radiusSearch_);
-                                                            rorfilter.setMinNeighborsInRadius (20);
+                                                            rorfilter.setMinNeighborsInRadius (minNeighbors_);
                                                             rorfilter.setNegative (false);
                                                             rorfilter.filter (*cloud_out);
                                                             auto indices_rem = rorfilter.getRemovedIndices ();
                                                             float removed = (float)cloud_out->points.size() / (float)entityCloud->points.size();
                                                             std::cout << "[BlockDarknet]Removed " << " input cloud: " << entityCloud->points.size()
                                                                       << " output cloud: " << cloud_out->points.size()
-                                                                      << " %  " << removed << " indices\n";
+                                                                      << " %  " << removed << " indices" << std::endl;
 
                                                             e->cloud(df->id(), cloud_out);
                                                             Eigen::Matrix4f dfPose = df->pose();
@@ -180,20 +180,19 @@ namespace dnn{
                                                             }
                                                         }
                                                     }
-                                                    
-                                                    cv::Rect rec(detection[2], detection[3], detection[4] -detection[2], detection[5]-detection[3]);
-                                                    //cv::putText(image, "Confidence" + std::to_string(detection[1]), cv::Point2i(detection[2], detection[3]),1,2,cv::Scalar(0,255,0));
-                                                    cv::putText(image, "ObjectId: " + std::to_string(detection[0]), cv::Point2i(detection[2], detection[3]),1,2,cv::Scalar(0,255,0));
-                                                    cv::rectangle(image, rec, cv::Scalar(0,255,0));
-
                                                 }
                                             }
                                             // send entities
                                             if(entities.size() > 0 && getPipe("Entities")->registrations() !=0 )
                                                 getPipe("Entities")->flush(entities);
                                             // send image with detections
-                                            if(getPipe("Color Image")->registrations() !=0 )
+                                            if(getPipe("Color Image")->registrations() !=0 ){
+                                                cv::Rect rec(detection[2], detection[3], detection[4] -detection[2], detection[5]-detection[3]);
+                                                //cv::putText(image, "Confidence" + std::to_string(detection[1]), cv::Point2i(detection[2], detection[3]),1,2,cv::Scalar(0,255,0));
+                                                cv::putText(image, "ObjectId: " + std::to_string(detection[0]), cv::Point2i(detection[2], detection[3]),1,2,cv::Scalar(0,255,0));
+                                                cv::rectangle(image, rec, cv::Scalar(0,255,0));
                                                 getPipe("Color Image")->flush(image);
+                                            }
                                             //auto end = std::chrono::steady_clock::now();
                                             //printf("Detector: Elapsed time in milliseconds : %i", std::chrono::duration_cast<std::chrono::milliseconds>(end - strt).count());
                                         }else{

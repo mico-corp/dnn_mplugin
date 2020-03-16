@@ -73,12 +73,12 @@ namespace dnn{
 
                                                 auto t2 = std::chrono::high_resolution_clock::now();
                                                 std::chrono::duration<float,std::milli> overlapTime = (t2 - t1);
-                                                std::cout << "[BlockEntityDatabase]Time checking overlaping between cubes: " << overlapTime.count()/1000 << std::endl;
+                                                // std::cout << "[BlockEntityDatabase]Time checking overlaping between cubes: " << overlapTime.count()/1000 << std::endl;
                                                 // create new entity associated to the most related parent
                                                 if(newEntity){
                                                     entities_[queryE->id()] = queryE;
                                                     newEntities.push_back(queryE);
-                                                    std::cout << "Created new entity " << queryE->id() << std::endl;
+                                                    // std::cout << "[BlockEntityDatabase]Created new entity " << queryE->id() << std::endl;
                                                 }
                                                 else{
                                                     // update entity 
@@ -93,7 +93,7 @@ namespace dnn{
                                                 // check overlapping here maybe
                                             }
                                         }
-                                        std::cout << "Number of entities: " << entities_.size() << std::endl;
+                                        // std::cout << "[BlockEntityDatabase]Number of entities: " << entities_.size() << std::endl;
                                         getPipe("Entities")->flush(newEntities);
                                         idle_ = true;
                                         #endif
