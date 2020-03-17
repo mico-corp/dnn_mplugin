@@ -162,9 +162,17 @@ namespace dnn{
 
 
                                                             pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_out(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
-                                                            std::cout << "[BlockDarknet]Starting radius removal" << std::endl;
-                                                            mico::radiusFilter<pcl::PointXYZRGBNormal>(entityCloud, cloud_out, radiusSearch_, minNeighbors_);
-
+                                                            if(false){
+                                                                std::cout << "[BlockDarknet]Starting radius removal" << std::endl;
+                                                                mico::radiusFilter<pcl::PointXYZRGBNormal>(entityCloud, cloud_out, radiusSearch_, minNeighbors_);
+                                                            }else{
+                                                                std::cout << "[BlockDarknet]Starting min cut removal" << std::endl;
+                                                                pcl::PointXYZRGBNormal center;
+                                                                center.x;
+                                                                center.y;
+                                                                center.z;
+                                                                mico::minCutSegmentation<pcl::PointXYZRGBNormal>(entityCloud, cloud_out, center, radiusSearch_, minNeighbors_, 0.4, 0.05);
+                                                            }
                                                             e->cloud(df->id(), cloud_out);
                                                             Eigen::Matrix4f dfPose = df->pose();
                                                             e->updateCovisibility(df->id(), dfPose);
