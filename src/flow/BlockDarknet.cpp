@@ -24,7 +24,6 @@
 #include <flow/Outpipe.h>
 #include <flow/DataFlow.h>
 #include <boost/math/special_functions/fpclassify.hpp>
-#include <pcl/filters/radius_outlier_removal.h>
 #include <chrono>
 #include <iostream>
 #include <experimental/filesystem>
@@ -152,33 +151,35 @@ namespace dnn{
                                                                 }
                                                             }
                                                         }
-
+                                                        cv::Rect rec(detection[2], detection[3], detection[4] -detection[2], detection[5]-detection[3]);
+                                                        //cv::putText(image, "Confidence" + std::to_string(detection[1]), cv::Point2i(detection[2], detection[3]),1,2,cv::Scalar(0,255,0));
+                                                        cv::putText(image, "ObjectId: " + std::to_string(detection[0]), cv::Point2i(detection[2], detection[3]),1,2,cv::Scalar(0,255,0));
+                                                        cv::rectangle(image, rec, cv::Scalar(0,255,0));
+                                                        
                                                         e->projections(df->id(), entityProjections);
-                                                        if(entityCloud->size() > 400){
-                                                            std::cout << "[BlockDarknet]Starting radius removal" << std::endl;
-                                                            pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_out(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
 
-                                                            // radius filtering
-                                                            pcl::RadiusOutlierRemoval<pcl::PointXYZRGBNormal> rorfilter (true); // Initializing with true will allow us to extract the removed indices
-                                                            rorfilter.setInputCloud (entityCloud);
-                                                            rorfilter.setRadiusSearch (radiusSearch_);
-                                                            rorfilter.setMinNeighborsInRadius (minNeighbors_);
-                                                            rorfilter.setNegative (false);
-                                                            rorfilter.filter (*cloud_out);
-                                                            auto indices_rem = rorfilter.getRemovedIndices ();
-                                                            float removed = (float)cloud_out->points.size() / (float)entityCloud->points.size();
-                                                            std::cout << "[BlockDarknet]Removed " << " input cloud: " << entityCloud->points.size()
-                                                                      << " output cloud: " << cloud_out->points.size()
-                                                                      << " %  " << removed << " indices" << std::endl;
+                                                        if(entityCloud->size() > 400){
+
+
+                                                            pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_out(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
+                                                            std::cout << "[BlockDarknet]Starting radius removal" << std::endl;
+                                                            mico::radiusFilter<pcl::PointXYZRGBNormal>(entityCloud, cloud_out, radiusSearch_, minNeighbors_);
 
                                                             e->cloud(df->id(), cloud_out);
                                                             Eigen::Matrix4f dfPose = df->pose();
                                                             e->updateCovisibility(df->id(), dfPose);
                                                             if(e->computePose(df->id())){
                                                                 entities.push_back(e);
+                                                                if(true){
+                                                                    std::string fileName = "Entity" + boost::to_string(numEntities_) + ".pcd";
+		                                                            pcl::io::savePCDFileASCII(fileName, *cloud_out);
+                                                                }
                                                                 numEntities_++;
                                                             }
                                                         }
+
+
+
                                                     }
                                                 }
                                             }
@@ -187,10 +188,7 @@ namespace dnn{
                                                 getPipe("Entities")->flush(entities);
                                             // send image with detections
                                             if(getPipe("Color Image")->registrations() !=0 ){
-                                                cv::Rect rec(detection[2], detection[3], detection[4] -detection[2], detection[5]-detection[3]);
-                                                //cv::putText(image, "Confidence" + std::to_string(detection[1]), cv::Point2i(detection[2], detection[3]),1,2,cv::Scalar(0,255,0));
-                                                cv::putText(image, "ObjectId: " + std::to_string(detection[0]), cv::Point2i(detection[2], detection[3]),1,2,cv::Scalar(0,255,0));
-                                                cv::rectangle(image, rec, cv::Scalar(0,255,0));
+                                                
                                                 getPipe("Color Image")->flush(image);
                                             }
                                             //auto end = std::chrono::steady_clock::now();
