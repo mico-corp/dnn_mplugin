@@ -60,11 +60,16 @@ namespace dnn{
         float confidenceThreshold_ = 0.7;
         int numEntities_ = 0;
         bool useDenseCloud_ = false;
-
+        bool storeClouds_ = false;
         // radius outlier removal parameters
-        bool filterCloud_ = false;
+        bool radiusFilter_ = false;
         double radiusSearch_ = 0.1;
         int minNeighbors_ = 20;
+
+        // min cut filter parameters
+        bool minCutFilter_ = false;
+        double weightCutFilter_ = 0.4;
+        double sigmaCutFilter_ = 0.05; 
 
         #ifdef HAS_DARKNET
         dnn::WrapperDarknet detector_;

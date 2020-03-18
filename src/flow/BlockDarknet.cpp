@@ -27,7 +27,7 @@
 #include <chrono>
 #include <iostream>
 #include <experimental/filesystem>
-
+#include <pcl/common/geometry.h>
 namespace dnn{
 
     BlockDarknet::BlockDarknet(){
@@ -162,27 +162,60 @@ namespace dnn{
 
 
                                                             pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_out(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
-                                                            if(false){
+                                                            if(radiusFilter_){
                                                                 std::cout << "[BlockDarknet]Starting radius removal" << std::endl;
                                                                 mico::radiusFilter<pcl::PointXYZRGBNormal>(entityCloud, cloud_out, radiusSearch_, minNeighbors_);
-                                                            }else{
+                                                            }else if(minCutFilter_){
                                                                 std::cout << "[BlockDarknet]Starting min cut removal" << std::endl;
-                                                                pcl::PointXYZRGBNormal center;
-                                                                center.x;
-                                                                center.y;
-                                                                center.z;
-                                                                mico::minCutSegmentation<pcl::PointXYZRGBNormal>(entityCloud, cloud_out, center, radiusSearch_, minNeighbors_, 0.4, 0.05);
+                                                                // get point in the center of the bounding box
+                                                                int width = detection[4] - detection[2];
+                                                                int heigth = detection[5] - detection[3];
+                                                                int cx = detection[2] + width / 2;
+                                                                int cy = detection[3] + heigth / 2;
+                                                                pcl::PointXYZRGBNormal center = denseCloud->at(cx,cy);
+                                                                
+                                                                // estimate entity radius
+                                                                int x1 = detection[2] + width * 0.1;
+                                                                int y1 = detection[3] + heigth * 0.1;
+                                                                int x2 = detection[2] + width * 0.9;
+                                                                int y2 = detection[3] + heigth * 0.9;
+                                                                pcl::PointXYZRGBNormal p1 = denseCloud->at(x1,y1);          //    p1----p2
+                                                                pcl::PointXYZRGBNormal p2 = denseCloud->at(x2,y1);          //    |      |
+                                                                pcl::PointXYZRGBNormal p3 = denseCloud->at(x1,y2);          //    |      |
+                                                                pcl::PointXYZRGBNormal p4 = denseCloud->at(x2,y2);          //    p3----p4
+
+                                                                std::vector<float> distance;
+                                                                distance.push_back(pcl::geometry::distance(p1,p2));
+                                                                distance.push_back(pcl::geometry::distance(p1,p3));
+                                                                distance.push_back(pcl::geometry::distance(p1,p4));
+                                                                distance.push_back(pcl::geometry::distance(p2,p3));
+                                                                distance.push_back(pcl::geometry::distance(p2,p4));
+                                                                distance.push_back(pcl::geometry::distance(p3,p4));
+                                                                sort(distance.begin(), distance.end());
+                                                                float radius = (distance[distance.size() / 2 - 1] + distance[distance.size() / 2]) / 2;
+                                                                
+                                                                mico::minCutSegmentation<pcl::PointXYZRGBNormal>(entityCloud, cloud_out, center, radius, 
+                                                                                                                minNeighbors_, weightCutFilter_, sigmaCutFilter_);
+                                                                
+                                                                float removed = (float)cloud_out->points.size() / (float)entityCloud->points.size();
+                                                                std::cout << "[BlockDarknet]Removed " << " input cloud: " << entityCloud->points.size()
+                                                                        << " output cloud: " << cloud_out->points.size()
+                                                                        << " %  " << removed << " indices" << std::endl;
                                                             }
+
                                                             e->cloud(df->id(), cloud_out);
                                                             Eigen::Matrix4f dfPose = df->pose();
                                                             e->updateCovisibility(df->id(), dfPose);
-                                                            if(e->computePose(df->id())){
-                                                                entities.push_back(e);
-                                                                if(true){
-                                                                    std::string fileName = "Entity" + boost::to_string(numEntities_) + ".pcd";
-		                                                            pcl::io::savePCDFileASCII(fileName, *cloud_out);
+
+                                                            if(cloud_out->size() > 100){
+                                                                if(e->computePose(df->id())){
+                                                                    entities.push_back(e);
+                                                                    if(storeClouds_){
+                                                                        std::string fileName = "Entity" + boost::to_string(numEntities_) + ".pcd";
+                                                                        pcl::io::savePCDFileASCII(fileName, *cloud_out);
+                                                                    }
+                                                                    numEntities_++;
                                                                 }
-                                                                numEntities_++;
                                                             }
                                                         }
 
@@ -230,11 +263,11 @@ namespace dnn{
                 }else{
                     useDenseCloud_ = false;
                 }
-            }else if(p.first == "radius_removal"){
-                if(!p.second.compare("true")){
-                    filterCloud_ = true;
+            }else if(p.first == "radius_filter"){
+                if(!p.second.compare("true")){ 
+                    radiusFilter_ = true;
                 }else{
-                    filterCloud_ = false;
+                    radiusFilter_ = false;
                 }
             }else if(p.first == "radius_search"){
                 if(p.second.compare("radius_search") && p.second != ""){
@@ -246,6 +279,19 @@ namespace dnn{
                 if(p.second.compare("minimum_neighbors") && p.second != ""){
                     std::istringstream istr(_params["minimum_neighbors"]);
                     istr >> minNeighbors_;
+                }
+            }
+            else if(p.first == "Min_cut_filter"){
+                if(!p.second.compare("true")){
+                    minCutFilter_ = true;
+                }else{
+                    minCutFilter_ = false;
+                }
+            }else if(p.first == "store_clouds"){
+                if(!p.second.compare("true")){
+                    storeClouds_ = true;
+                }else{
+                    storeClouds_ = false;
                 }
             }   
         }
@@ -290,7 +336,7 @@ namespace dnn{
     }
     
     std::vector<std::string> BlockDarknet::parameters(){
-        return {"cfg", "weights", "confidence_threshold", "dense_cloud", "radius_removal", "radius_search", "minimum_neighbors"};
+        return {"cfg", "weights", "confidence_threshold", "dense_cloud", "radius_filter", "radius_search", "minimum_neighbors","Min_cut_filter","store_clouds"};
     }
 
 
