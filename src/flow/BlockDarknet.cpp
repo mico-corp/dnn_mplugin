@@ -183,7 +183,7 @@ namespace dnn{
                                                                 pcl::PointXYZRGBNormal p2 = denseCloud->at(x2,y1);          //    |      |
                                                                 pcl::PointXYZRGBNormal p3 = denseCloud->at(x1,y2);          //    |      |
                                                                 pcl::PointXYZRGBNormal p4 = denseCloud->at(x2,y2);          //    p3----p4
-
+                                                                
                                                                 std::vector<float> distance;
                                                                 distance.push_back(pcl::geometry::distance(p1,p2));
                                                                 distance.push_back(pcl::geometry::distance(p1,p3));
@@ -194,6 +194,7 @@ namespace dnn{
                                                                 sort(distance.begin(), distance.end());
                                                                 float radius = (distance[distance.size() / 2 - 1] + distance[distance.size() / 2]) / 2;
                                                                 
+                                                                // min cut clustering
                                                                 mico::minCutSegmentation<pcl::PointXYZRGBNormal>(entityCloud, cloud_out, center, radius, 
                                                                                                                 minNeighbors_, weightCutFilter_, sigmaCutFilter_);
                                                                 
@@ -210,6 +211,7 @@ namespace dnn{
                                                             if(cloud_out->size() > 100){
                                                                 if(e->computePose(df->id())){
                                                                     entities.push_back(e);
+                                                                    std::cout << "[BlockDarknet]Created Entity: " << e->id() << std::endl;
                                                                     if(storeClouds_){
                                                                         std::string fileName = "Entity" + boost::to_string(numEntities_) + ".pcd";
                                                                         pcl::io::savePCDFileASCII(fileName, *cloud_out);
@@ -218,9 +220,6 @@ namespace dnn{
                                                                 }
                                                             }
                                                         }
-
-
-
                                                     }
                                                 }
                                             }

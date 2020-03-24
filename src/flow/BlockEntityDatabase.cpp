@@ -41,7 +41,7 @@ namespace dnn{
                                         auto entities = _data.get<std::vector<std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>>>("Entities"); 
                                         // store the new entities
                                         std::vector<std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>> newEntities;
-
+                                        std::cout << "[BlockEntityDatabase] Starting callback " << std::endl;
                                         if(!entities_.empty()){
                                             // candidates
                                             for(auto queryE: entities){
@@ -59,8 +59,8 @@ namespace dnn{
                                                 for(auto trainE = entities_.rbegin(); trainE != entities_.rend() && i < comparedEntities_; ++trainE, i++){
                                                     if(queryE->id() != (*trainE).second->id()){
                                                         float overlaped = queryE->percentageOverlapped((*trainE).second);
-                                                        // std::cout << "Overlapped percentage between " << queryE->id() << " and " << trainE.second->id() << " : " << 
-                                                        //     overlaped << std::endl;
+                                                        std::cout << "[BlockEntityDatabase]Overlapped percentage between " << queryE->id() << " and " << (*trainE).second->id() << " : " << 
+                                                            overlaped << std::endl;
 
                                                         // if the entity overlaps with other created dont create a new one and update the first
                                                         if(overlaped > overlapScore_ && overlaped > affinity){
@@ -89,6 +89,7 @@ namespace dnn{
                                         }else{
                                             for(auto e: entities){
                                                 entities_[e->id()] = e;
+                                                std::cout << "[BlockEntityDatabase] Added entity " << e->id() << " to database" << std::endl; 
                                                 newEntities.push_back(e);
                                                 // check overlapping here maybe
                                             }
