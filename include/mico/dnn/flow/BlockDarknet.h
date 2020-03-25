@@ -52,6 +52,8 @@ namespace dnn{
                                                             "   - Outputs: \n"
                                                             "              Color Image: Color image with detected objects in a bounding box \n"
                                                             "              Entities: Vector of entities \n";};
+    private:
+        void objects_names_from_file(std::string const filename);
 
     private:
         bool idle_ = true;
@@ -73,6 +75,7 @@ namespace dnn{
 
         #ifdef HAS_DARKNET
         dnn::WrapperDarknet detector_;
+        std::vector<std::string> obj_names_;
         #endif
     };
 

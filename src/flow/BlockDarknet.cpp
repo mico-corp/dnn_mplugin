@@ -246,11 +246,14 @@ namespace dnn{
         #ifdef HAS_DARKNET
         std::string cfgFile;
         std::string weightsFile;
+        std::string namesFile;
         for(auto &p: _params){
             if(p.first == "cfg"){
                 cfgFile = p.second;
             }else if(p.first == "weights"){
                 weightsFile = p.second;
+            }else if(p.first == "names"){
+                namesFile = p.second;
             }else if(p.first == "confidence_threshold"){
                 if(p.second.compare("confidence_threshold") && p.second != ""){
                     std::istringstream istr(_params["confidence_threshold"]);
@@ -297,11 +300,11 @@ namespace dnn{
 
         // cfg file provided?
         if(!cfgFile.compare("cfg") || !cfgFile.compare("")){
-            std::cout << "[Block Darknet]Cfg not provided \n";                    
+            std::cout << "[Block Darknet] Cfg not provided \n";                    
             cfgFile = getenv("HOME") + std::string("/.mico/downloads/yolov3-tiny.cfg");
             // cfg file already downloaded?
             if(!std::experimental::filesystem::exists(cfgFile)){
-                std::cout << "[Block Darknet]Downloading yolov3-tiny.cfg \n";
+                std::cout << "[Block Darknet] Downloading yolov3-tiny.cfg \n";
                 system("wget -P ~/.mico/downloads https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3-tiny.cfg");
             }
         }   
@@ -316,10 +319,17 @@ namespace dnn{
                 system("wget -P ~/.mico/downloads https://pjreddie.com/media/files/yolov3-tiny.weights");
             }
         }
-        std::cout << "[Block Darknet]CfgFile : " << cfgFile << "\n";
-        std::cout << "[Block Darknet]WeightsFile : " << weightsFile << "\n";
-        std::cout << "[Block Darknet]Confidence threshold : " << confidenceThreshold_ << "\n";
-        std::cout << "[Block Darknet]Use dense cloud : " << useDenseCloud_ << "\n";
+        if(!namesFile.compare("names") || !namesFile.compare("")){    
+            std::cout << "[Block Darknet] Objects names not provided \n";                    
+        }else{
+            objects_names_from_file(namesFile);
+        }
+
+        std::cout << "[Block Darknet] Cfg file : " << cfgFile << "\n";
+        std::cout << "[Block Darknet] Weights file : " << weightsFile << "\n";
+        std::cout << "[Block Darknet] Object names file : " << namesFile << "\n";
+        std::cout << "[Block Darknet] Confidence threshold : " << confidenceThreshold_ << "\n";
+        std::cout << "[Block Darknet] Use dense cloud : " << useDenseCloud_ << "\n";
 
         hasParameters_ = true;  
         if(detector_.init(cfgFile,weightsFile)){
@@ -335,8 +345,14 @@ namespace dnn{
     }
     
     std::vector<std::string> BlockDarknet::parameters(){
-        return {"cfg", "weights", "confidence_threshold", "dense_cloud", "radius_filter", "radius_search", "minimum_neighbors","Min_cut_filter","store_clouds"};
+        return {"cfg", "weights", "names", "confidence_threshold", "dense_cloud", "radius_filter", "radius_search", "minimum_neighbors","Min_cut_filter","store_clouds"};
     }
 
+    void BlockDarknet::objects_names_from_file(std::string const filename){
+        std::ifstream file(filename);
+        std::vector<std::string> obj_names_;
+        for(std::string line; getline(file, line);) obj_names_.push_back(line);
+        std::cout << "[Block Darknet] Objects names loaded \n";
+    }
 
 }
