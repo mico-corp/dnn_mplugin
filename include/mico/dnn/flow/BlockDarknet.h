@@ -29,7 +29,8 @@
     #include <mico/dnn/object_detection/dnn/WrapperDarknet.h>
     #include <mico/dnn/map3d/Entity.h>
 #endif
-
+#include <opencv2/core/types.hpp>
+#include <utility> 
 namespace dnn{
 
     class BlockDarknet: public flow::Block{
@@ -54,6 +55,7 @@ namespace dnn{
                                                             "              Entities: Vector of entities \n";};
     private:
         void objects_names_from_file(std::string const filename);
+        cv::Scalar obj_id_to_color(int obj_id);
 
     private:
         bool idle_ = true;
@@ -75,7 +77,7 @@ namespace dnn{
 
         #ifdef HAS_DARKNET
         dnn::WrapperDarknet detector_;
-        std::vector<std::string> obj_names_;
+        std::map<int, std::pair<std::string, cv::Scalar>> objNames_;
         #endif
     };
 

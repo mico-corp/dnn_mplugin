@@ -22,11 +22,16 @@
 #ifndef MICO_DNN_MAP3D_ENTITY_H_
 #define MICO_DNN_MAP3D_ENTITY_H_
 
+#include <string>
+#include <cmath>
+
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/io/pcd_io.h>
-#include <cmath>
+
 #include <opencv2/opencv.hpp>
+#include <opencv2/core/types.hpp>
+
 #include <mico/slam/utils3d.h>
 #include <mico/dnn/utils/Cube.h>
 
@@ -81,6 +86,10 @@ public:
 
     // update the entity with anoter entity
     void update(std::shared_ptr<dnn::Entity<PointType_>> _e);
+    
+    std::string name();
+
+    void name(std::string _name, cv::Scalar _color);
 private:
     Entity(){};
 
@@ -101,6 +110,8 @@ private:
 
     /// detection
     int label_;
+    std::string name_;
+    cv::Scalar color_;
     std::map<int, float> confidence_;
     std::map<int, std::vector<float>> boundingbox_;  // left top right bottom
     std::map<int, std::vector<float>> boundingcube_; // xmax xmin ymax ymin zmax zmin

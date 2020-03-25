@@ -209,4 +209,16 @@ namespace dnn {
         return confidence_[_df];
     }
 
+    template<typename PointType_>    
+    inline std::string Entity<PointType_>::name(){
+        return name_;
+    }
+
+    template<typename PointType_>    
+    inline void Entity<PointType_>::name(std::string _name, cv::Scalar _color){
+        name_ = _name;
+        color_ = _color;
+    }
+
+
 }

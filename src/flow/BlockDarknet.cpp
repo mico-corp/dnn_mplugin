@@ -211,6 +211,10 @@ namespace dnn{
                                                             if(cloud_out->size() > 100){
                                                                 if(e->computePose(df->id())){
                                                                     entities.push_back(e);
+                                                                    // get object name
+                                                                    if(objNames_.size() > e->id()){
+                                                                        e->name(objNames_[e->id()].first, objNames_[e->id()].second);
+                                                                    }
                                                                     std::cout << "[BlockDarknet]Created Entity: " << e->id() << std::endl;
                                                                     if(storeClouds_){
                                                                         std::string fileName = "Entity" + boost::to_string(numEntities_) + ".pcd";
@@ -350,9 +354,20 @@ namespace dnn{
 
     void BlockDarknet::objects_names_from_file(std::string const filename){
         std::ifstream file(filename);
-        std::vector<std::string> obj_names_;
-        for(std::string line; getline(file, line);) obj_names_.push_back(line);
+        int index = 0;
+        for(std::string line; getline(file, line);){
+            objNames_[index] = std::make_pair(line, obj_id_to_color(index));
+            index++;
+        }
         std::cout << "[Block Darknet] Objects names loaded \n";
     }
 
+    cv::Scalar BlockDarknet::obj_id_to_color(int obj_id) {
+        int const colors[6][3] = { { 1,0,1 },{ 0,0,1 },{ 0,1,1 },{ 0,1,0 },{ 1,1,0 },{ 1,0,0 } };
+        int const offset = obj_id * 123457 % 6;
+        int const color_scale = 150 + (obj_id * 123457) % 100;
+        cv::Scalar color(colors[offset][0], colors[offset][1], colors[offset][2]);
+        color *= color_scale;
+        return color;
+    }
 }
