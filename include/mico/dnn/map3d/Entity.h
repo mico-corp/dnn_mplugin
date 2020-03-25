@@ -87,9 +87,12 @@ public:
     // update the entity with anoter entity
     void update(std::shared_ptr<dnn::Entity<PointType_>> _e);
     
-    std::string name();
+    cv::Scalar color();
 
+    std::string name();
+    
     void name(std::string _name, cv::Scalar _color);
+
 private:
     Entity(){};
 

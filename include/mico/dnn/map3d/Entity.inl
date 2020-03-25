@@ -220,5 +220,10 @@ namespace dnn {
         color_ = _color;
     }
 
+    template<typename PointType_>    
+    inline cv::Scalar Entity<PointType_>::color(){
+        return color_;
+    }
+
 
 }
