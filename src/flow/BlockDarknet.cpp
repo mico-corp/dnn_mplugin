@@ -152,8 +152,8 @@ namespace dnn{
                                                             }
                                                         }
                                                         cv::Rect rec(detection[2], detection[3], detection[4] -detection[2], detection[5]-detection[3]);
-                                                        //cv::putText(image, "Confidence" + std::to_string(detection[1]), cv::Point2i(detection[2], detection[3]),1,2,cv::Scalar(0,255,0));
                                                         cv::putText(image, "ObjectId: " + std::to_string(detection[0]), cv::Point2i(detection[2], detection[3]),1,2,cv::Scalar(0,255,0));
+                                                        cv::putText(image, "Confidence" + std::to_string(detection[1]), cv::Point2i(detection[2] + (detection[4] - detection[2]) / 2, detection[3]),1,2,cv::Scalar(0,255,0));
                                                         cv::rectangle(image, rec, cv::Scalar(0,255,0));
                                                         
                                                         e->projections(df->id(), entityProjections);
@@ -163,10 +163,10 @@ namespace dnn{
 
                                                             pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_out(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
                                                             if(radiusFilter_){
-                                                                std::cout << "[BlockDarknet]Starting radius removal" << std::endl;
+                                                                std::cout << "[BlockDarknet] Starting radius removal" << std::endl;
                                                                 mico::radiusFilter<pcl::PointXYZRGBNormal>(entityCloud, cloud_out, radiusSearch_, minNeighbors_);
                                                             }else if(minCutFilter_){
-                                                                std::cout << "[BlockDarknet]Starting min cut removal" << std::endl;
+                                                                std::cout << "[BlockDarknet] Starting min cut removal" << std::endl;
                                                                 // get point in the center of the bounding box
                                                                 int width = detection[4] - detection[2];
                                                                 int heigth = detection[5] - detection[3];
@@ -212,10 +212,11 @@ namespace dnn{
                                                                 if(e->computePose(df->id())){
                                                                     entities.push_back(e);
                                                                     // get object name
-                                                                    if(objNames_.size() > e->id()){
-                                                                        e->name(objNames_[e->id()].first, objNames_[e->id()].second);
+                                                                    int label = e->label();
+                                                                    if(objNames_.size() > label){
+                                                                        e->name(objNames_[label].first, objNames_[label].second);
                                                                     }
-                                                                    std::cout << "[BlockDarknet]Created Entity: " << e->id() << std::endl;
+                                                                    std::cout << "[BlockDarknet]Created Entity: " << e->id() << " --> " << e->name() << std::endl;
                                                                     if(storeClouds_){
                                                                         std::string fileName = "Entity" + boost::to_string(numEntities_) + ".pcd";
                                                                         pcl::io::savePCDFileASCII(fileName, *cloud_out);
@@ -357,6 +358,7 @@ namespace dnn{
         int index = 0;
         for(std::string line; getline(file, line);){
             objNames_[index] = std::make_pair(line, obj_id_to_color(index));
+            std::cout << "[Block Darknet] Object id " << index << " name " << line << std::endl;
             index++;
         }
         std::cout << "[Block Darknet] Objects names loaded \n";

@@ -225,5 +225,8 @@ namespace dnn {
         return color_;
     }
 
-
+    template<typename PointType_>    
+    inline int Entity<PointType_>::label(){
+        return label_;
+    }
 }

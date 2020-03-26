@@ -93,6 +93,8 @@ public:
     
     void name(std::string _name, cv::Scalar _color);
 
+    int label();
+
 private:
     Entity(){};
 
