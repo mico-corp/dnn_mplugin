@@ -153,7 +153,7 @@ namespace dnn{
                                                         }
                                                         cv::Rect rec(detection[2], detection[3], detection[4] -detection[2], detection[5]-detection[3]);
                                                         cv::putText(image, "ObjectId: " + std::to_string(detection[0]), cv::Point2i(detection[2], detection[3]),1,2,cv::Scalar(0,255,0));
-                                                        cv::putText(image, "Confidence" + std::to_string(detection[1]), cv::Point2i(detection[2] + (detection[4] - detection[2]) / 2, detection[3]),1,2,cv::Scalar(0,255,0));
+                                                        cv::putText(image, "Confidence" + std::to_string(detection[1]), cv::Point2i(detection[2] + (detection[4] - detection[2]) / 2, detection[3]),1,1,cv::Scalar(0,255,0));
                                                         cv::rectangle(image, rec, cv::Scalar(0,255,0));
                                                         
                                                         e->projections(df->id(), entityProjections);
@@ -172,30 +172,17 @@ namespace dnn{
                                                                 int heigth = detection[5] - detection[3];
                                                                 int cx = detection[2] + width / 2;
                                                                 int cy = detection[3] + heigth / 2;
-                                                                pcl::PointXYZRGBNormal center = denseCloud->at(cx,cy);
-                                                                
+
+                                                                pcl::PointXYZRGBNormal center = entityCloud->points[ entityCloud->points.size() / 2];
+
                                                                 // estimate entity radius
-                                                                int x1 = detection[2] + width * 0.1;
-                                                                int y1 = detection[3] + heigth * 0.1;
-                                                                int x2 = detection[2] + width * 0.9;
-                                                                int y2 = detection[3] + heigth * 0.9;
-                                                                pcl::PointXYZRGBNormal p1 = denseCloud->at(x1,y1);          //    p1----p2
-                                                                pcl::PointXYZRGBNormal p2 = denseCloud->at(x2,y1);          //    |      |
-                                                                pcl::PointXYZRGBNormal p3 = denseCloud->at(x1,y2);          //    |      |
-                                                                pcl::PointXYZRGBNormal p4 = denseCloud->at(x2,y2);          //    p3----p4
-                                                                
-                                                                std::vector<float> distance;
-                                                                distance.push_back(pcl::geometry::distance(p1,p2));
-                                                                distance.push_back(pcl::geometry::distance(p1,p3));
-                                                                distance.push_back(pcl::geometry::distance(p1,p4));
-                                                                distance.push_back(pcl::geometry::distance(p2,p3));
-                                                                distance.push_back(pcl::geometry::distance(p2,p4));
-                                                                distance.push_back(pcl::geometry::distance(p3,p4));
-                                                                sort(distance.begin(), distance.end());
-                                                                float radius = (distance[distance.size() / 2 - 1] + distance[distance.size() / 2]) / 2;
-                                                                
+                                                                int x1 = detection[2] ;
+                                                                int y1 = detection[3] ;
+                                                                int x2 = detection[2] + width;
+                                                                int y2 = detection[3] + heigth;
+                                                                std::cout << "[BlockDarknet] Filter Radius " << radiusSearch_ << std::endl; 
                                                                 // min cut clustering
-                                                                mico::minCutSegmentation<pcl::PointXYZRGBNormal>(entityCloud, cloud_out, center, radius, 
+                                                                mico::minCutSegmentation<pcl::PointXYZRGBNormal>(entityCloud, cloud_out, center, radiusSearch_, 
                                                                                                                 minNeighbors_, weightCutFilter_, sigmaCutFilter_);
                                                                 
                                                                 float removed = (float)cloud_out->points.size() / (float)entityCloud->points.size();
@@ -204,22 +191,35 @@ namespace dnn{
                                                                         << " %  " << removed << " indices" << std::endl;
                                                             }
 
-                                                            e->cloud(df->id(), cloud_out);
-                                                            Eigen::Matrix4f dfPose = df->pose();
-                                                            e->updateCovisibility(df->id(), dfPose);
-
                                                             if(cloud_out->size() > 100){
+                                                                Eigen::Matrix4f dfPose = df->pose();
+                                                                // add dataframe id and his pose
+                                                                e->updateCovisibility(df->id(), dfPose);
+                                                                // add cloud to the entity
+                                                                e->cloud(df->id(), cloud_out);
                                                                 if(e->computePose(df->id())){
                                                                     entities.push_back(e);
                                                                     // get object name
                                                                     int label = e->label();
                                                                     if(objNames_.size() > label){
                                                                         e->name(objNames_[label].first, objNames_[label].second);
+                                                                        std::cout << "[BlockDarknet]Created Entity: " << e->id() << " --> " << e->name() << std::endl;
                                                                     }
-                                                                    std::cout << "[BlockDarknet]Created Entity: " << e->id() << " --> " << e->name() << std::endl;
                                                                     if(storeClouds_){
-                                                                        std::string fileName = "Entity" + boost::to_string(numEntities_) + ".pcd";
-                                                                        pcl::io::savePCDFileASCII(fileName, *cloud_out);
+                                                                        std::string fileCloudName = "EntityCloud" + boost::to_string(numEntities_) + ".pcd";
+                                                                        pcl::io::savePCDFileASCII(fileCloudName, *cloud_out);
+
+                                                                        std::string fileLeftName = "EntityLeft" + boost::to_string(numEntities_) + ".png";
+                                                                        std::string fileDepthName = "EntityDepth" + boost::to_string(numEntities_) + ".png";
+
+                                                                        cv::Mat left = df->leftImage().clone();
+                                                                        cv::Mat depth = df->depthImage().clone();
+
+                                                                        cv::Mat croppedLeft = left(rec);
+                                                                        cv::Mat croppedDepth = depth(rec);
+                                                                        
+                                                                        cv::imwrite( fileLeftName, croppedLeft );
+                                                                        cv::imwrite( fileDepthName, croppedDepth );
                                                                     }
                                                                     numEntities_++;
                                                                 }
