@@ -72,8 +72,8 @@ namespace dnn{
 
         // min cut filter parameters
         bool minCutFilter_ = false;
-        double weightCutFilter_ = 0.4;
-        double sigmaCutFilter_ = 0.05; 
+        double weightCutFilter_ = 0.004;
+        double sigmaCutFilter_ = 0.005; 
 
         #ifdef HAS_DARKNET
         dnn::WrapperDarknet detector_;

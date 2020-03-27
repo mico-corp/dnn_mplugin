@@ -47,7 +47,8 @@ namespace dnn{
                                                             
     private:
         #ifdef HAS_DARKNET
-            std::map<int, std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>> entities_;
+            // [label][vector of entities]
+            std::map<int, std::vector<std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>>> entities_;
         #endif
         float overlapScore_ = 1;
         int comparedEntities_ = 8;

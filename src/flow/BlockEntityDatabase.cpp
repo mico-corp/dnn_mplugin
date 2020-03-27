@@ -41,30 +41,27 @@ namespace dnn{
                                         auto entities = _data.get<std::vector<std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>>>("Entities"); 
                                         // store the new entities
                                         std::vector<std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>> newEntities;
-                                        std::cout << "[BlockEntityDatabase] Starting callback " << std::endl;
                                         if(!entities_.empty()){
                                             // candidates
                                             for(auto queryE: entities){
+                                                int label = queryE->label();
                                                 // check overlap
-                                                auto eDfs = queryE->dfs();
-                                                auto queryBoundingCube = queryE->boundingCube(eDfs[0]);
 
                                                 bool newEntity = true;
                                                 std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>> parentEntity = nullptr;
                                                 float affinity = 0;
                                                 auto t1 = std::chrono::high_resolution_clock::now();
-                                                // entities in database
-                                                //for(auto trainE: entities_){
+                                                // entities of same label in database
                                                 int i = 0;
-                                                for(auto trainE = entities_.rbegin(); trainE != entities_.rend() && i < comparedEntities_; ++trainE, i++){
-                                                    if(queryE->id() != (*trainE).second->id()){
-                                                        float overlaped = queryE->percentageOverlapped((*trainE).second);
-                                                        std::cout << "[BlockEntityDatabase]Overlapped percentage between " << queryE->id() << " and " << (*trainE).second->id() << " : " << 
+                                                for(auto trainE = entities_[label].rbegin(); trainE != entities_[label].rend() && i < comparedEntities_; ++trainE, i++){
+                                                    if(queryE->id() != (*trainE)->id()){
+                                                        float overlaped = queryE->percentageOverlapped(*trainE);
+                                                        std::cout << "[BlockEntityDatabase] Overlapped percentage between " << queryE->id() << " and " << (*trainE)->id() << " : " << 
                                                             overlaped << std::endl;
 
                                                         // if the entity overlaps with other created dont create a new one and update the first
                                                         if(overlaped > overlapScore_ && overlaped > affinity){
-                                                            parentEntity = (*trainE).second;
+                                                            parentEntity = (*trainE);
                                                             affinity = overlaped;
                                                             newEntity = false;
                                                         }
@@ -73,23 +70,23 @@ namespace dnn{
 
                                                 auto t2 = std::chrono::high_resolution_clock::now();
                                                 std::chrono::duration<float,std::milli> overlapTime = (t2 - t1);
-                                                // std::cout << "[BlockEntityDatabase]Time checking overlaping between cubes: " << overlapTime.count()/1000 << std::endl;
+                                                std::cout << "[BlockEntityDatabase]Time checking overlaping between cubes: " << overlapTime.count()/1000 << std::endl;
                                                 // create new entity associated to the most related parent
                                                 if(newEntity){
-                                                    entities_[queryE->id()] = queryE;
+                                                    entities_[label].push_back(queryE);
                                                     newEntities.push_back(queryE);
-                                                    // std::cout << "[BlockEntityDatabase]Created new entity " << queryE->id() << std::endl;
+                                                    std::cout << "[BlockEntityDatabase] Created new entity " << queryE->id() << "(" << queryE->name() << ")" << std::endl;
                                                 }
                                                 else{
                                                     // update entity 
                                                     parentEntity->update(queryE);
-                                                    //std::cout << "--------------Created new entity associated with " << parentEntity << " and overlaped% " << affinity << std::endl;
+                                                    std::cout << "Updated entity " << parentEntity->id() << "(" << parentEntity->name() << ")" << "  overlaped% " << affinity << std::endl;
                                                 }
                                             }
                                         }else{
                                             for(auto e: entities){
-                                                entities_[e->id()] = e;
-                                                std::cout << "[BlockEntityDatabase] Added entity " << e->id() << " to database" << std::endl; 
+                                                entities_[e->label()].push_back(e);
+                                                std::cout << "[BlockEntityDatabase] Added entity " << e->id() << "(" << e->name() << ")" << " to database" << std::endl; 
                                                 newEntities.push_back(e);
                                                 // check overlapping here maybe
                                             }
