@@ -116,38 +116,58 @@ namespace dnn{
                                             auto detections = detector_.detect(image);
                                             // detection -> label, confidence, left, top, right, bottom
 
+
                                             pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr featureCloud = df->featureCloud();
                                             pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr denseCloud = df->cloud();
                                             std::vector<cv::Point2f> featureProjections = df->featureProjections();
+                                            cv::Mat featureDescriptors = df->featureDescriptors();
+
+                                            cv::Mat entityFeatureDescriptors;
 
                                             for(auto &detection: detections){
                                                if(detection[1] > confidenceThreshold_){
                                                     std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>> e(new dnn::Entity<pcl::PointXYZRGBNormal>(
                                                          numEntities_, df->id(), detection[0], detection[1], {detection[2],detection[3],detection[4],detection[5]}));  
                                                     pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr entityCloud(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
+                                                    pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr entityFeatureCloud(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
                                                     std::vector<cv::Point2f> entityProjections;
 
+                                                    // elimate % of Rect (background)
+                                                    float uOff = 0.85;
+                                                    float dOff = 1.15;
                                                     if(featureProjections.size() > 0 && featureCloud != nullptr){
-
-                                                        if(!useDenseCloud_){ // feature cloud
-                                                            for(auto it = featureProjections.begin(); it != featureProjections.end(); it++ ){
-                                                                if( it->x > detection[2] && it->x < detection[4] && it->y > detection[3] && it->y < detection[5]){
-                                                                    entityProjections.push_back(*it);
-                                                                    auto index = it - featureProjections.begin();
-                                                                    entityCloud->push_back(featureCloud->points[index]);
-                                                                    // mising descriptors
+                                                        
+                                                        // store feature projections and cloud
+                                                        int index = 0;
+                                                        for(auto it = featureProjections.begin(); it != featureProjections.end(); it++ ){
+                                                            //check features inside bounding box
+                                                            if( it->x > detection[2] * dOff && it->x < detection[4] * uOff && it->y > detection[3] * dOff && it->y < detection[5] * uOff){
+                                                                pcl::PointXYZRGBNormal p = featureCloud->points[index];
+                                                                if(!boost::math::isnan(p.x) && !boost::math::isnan(p.y) && !boost::math::isnan(p.z)){
+                                                                    if(!boost::math::isnan(-p.x) && !boost::math::isnan(-p.y) && !boost::math::isnan(-p.z)){
+                                                                        // cloud
+                                                                        entityFeatureCloud->push_back(p);
+                                                                        // projections
+                                                                        //entityProjections.push_back(*it);
+                                                                        // descriptors
+                                                                        //entityFeatureDescriptors.push_back(featureDescriptors.row(index));
+                                                                    }
                                                                 }
                                                             }
+                                                            index++;
                                                         }
-                                                        else{
-                                                            // dense cloud
-                                                            for (int dy = detection[3] * 1.15; dy < detection[5] * 0.85 ; dy++) {
-                                                                for (int dx = detection[2] * 1.15; dx < detection[4]* 0.85; dx++) {
-                                                                    pcl::PointXYZRGBNormal p = denseCloud->at(dx,dy);
-                                                                    if(!boost::math::isnan(p.x) && !boost::math::isnan(p.y) && !boost::math::isnan(p.z)){
-                                                                        if(!boost::math::isnan(-p.x) && !boost::math::isnan(-p.y) && !boost::math::isnan(-p.z))
-                                                                            entityCloud->push_back(p);
-                                                                    }
+                                                        e->featureCloud(df->id(), entityFeatureCloud);
+                                                        e->projections(df->id(), entityProjections);
+                                                        e->descriptors(df->id(), entityFeatureDescriptors);
+
+
+                                                        // store dense cloud
+                                                        for (int dy = detection[3] * dOff; dy < detection[5] * uOff ; dy++) {
+                                                            for (int dx = detection[2] * dOff; dx < detection[4]* uOff; dx++) {
+                                                                pcl::PointXYZRGBNormal p = denseCloud->at(dx,dy);
+                                                                if(!boost::math::isnan(p.x) && !boost::math::isnan(p.y) && !boost::math::isnan(p.z)){
+                                                                    if(!boost::math::isnan(-p.x) && !boost::math::isnan(-p.y) && !boost::math::isnan(-p.z))
+                                                                        entityCloud->push_back(p);
                                                                 }
                                                             }
                                                         }
@@ -157,7 +177,6 @@ namespace dnn{
                                                         cv::putText(image, "Confidence" + std::to_string(detection[1]), cv::Point2i(detection[2] + (detection[4] - detection[2]) / 2, detection[3]),1,1,cv::Scalar(0,255,0));
                                                         cv::rectangle(image, rec, cv::Scalar(0,255,0));
                                                         
-                                                        e->projections(df->id(), entityProjections);
 
                                                         if(entityCloud->size() > 400){
                                                             pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_out(new pcl::PointCloud<pcl::PointXYZRGBNormal>());

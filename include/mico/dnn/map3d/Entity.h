@@ -60,6 +60,9 @@ public:
     void cloud(int _dataframeId, typename pcl::PointCloud<PointType_>::Ptr &_cloud);
     typename pcl::PointCloud<PointType_>::Ptr cloud(int _dataframeId);
 
+    void featureCloud(int _dataframeId, typename pcl::PointCloud<PointType_>::Ptr &_cloud);
+    typename pcl::PointCloud<PointType_>::Ptr featureCloud(int _dataframeId);
+
     void boundingbox(int _dataframeId, std::vector<float> _bb);
     std::vector<float> boundingbox(int _dataframeId);
 
@@ -107,7 +110,8 @@ private:
     std::map<int, Eigen::Quaternionf> orientations_;
 
     /// 3D
-    std::map<int, typename pcl::PointCloud<PointType_>::Ptr> clouds_;
+    std::map<int, typename pcl::PointCloud<PointType_>::Ptr> denseClouds_;
+    std::map<int, typename pcl::PointCloud<PointType_>::Ptr> featureClouds_;
 
     /// 2D
     std::map<int, std::vector<cv::Point2f>> projections_;

@@ -41,7 +41,7 @@ namespace dnn {
         Eigen::Matrix4f pose = Eigen::Matrix4f::Identity();
         std::vector<float> bc;
         // Compute principal directions
-        if(!mico::computePCA(*clouds_[_dataframeId], pose, bc))
+        if(!mico::computePCA(*denseClouds_[_dataframeId], pose, bc))
             return false;
 
         poses_[_dataframeId] = pose;   // to global pose 666 check this
@@ -123,7 +123,7 @@ namespace dnn {
 
     template<typename PointType_>
     inline void Entity<PointType_>::cloud(int _dataframeId, typename pcl::PointCloud<PointType_>::Ptr &_cloud){
-        clouds_[_dataframeId] = _cloud;
+        denseClouds_[_dataframeId] = _cloud;
         // check for new dataframe
         if(std::find(dfs_.begin(), dfs_.end(), _dataframeId) == dfs_.end())
             dfs_.push_back(_dataframeId);
@@ -131,7 +131,20 @@ namespace dnn {
 
     template<typename PointType_>
     inline typename pcl::PointCloud<PointType_>::Ptr  Entity<PointType_>::cloud(int _dataframeId){
-        return clouds_[_dataframeId];
+        return denseClouds_[_dataframeId];
+    }
+
+    template<typename PointType_>
+    inline void Entity<PointType_>::featureCloud(int _dataframeId, typename pcl::PointCloud<PointType_>::Ptr &_cloud){
+        featureClouds_[_dataframeId] = _cloud;
+        // check for new dataframe
+        if(std::find(dfs_.begin(), dfs_.end(), _dataframeId) == dfs_.end())
+            dfs_.push_back(_dataframeId);
+    }
+
+    template<typename PointType_>
+    inline typename pcl::PointCloud<PointType_>::Ptr  Entity<PointType_>::featureCloud(int _dataframeId){
+        return featureClouds_[_dataframeId];
     }
 
     template<typename PointType_>
