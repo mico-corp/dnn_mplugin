@@ -148,9 +148,9 @@ namespace dnn{
                                                                         // cloud
                                                                         entityFeatureCloud->push_back(p);
                                                                         // projections
-                                                                        //entityProjections.push_back(*it);
+                                                                        entityProjections.push_back(*it);
                                                                         // descriptors
-                                                                        //entityFeatureDescriptors.push_back(featureDescriptors.row(index));
+                                                                        entityFeatureDescriptors.push_back(featureDescriptors.row(index));
                                                                     }
                                                                 }
                                                             }

@@ -33,6 +33,7 @@
 #include <opencv2/core/types.hpp>
 
 #include <mico/slam/utils3d.h>
+#include <mico/slam/Word.h>
 #include <mico/dnn/utils/Cube.h>
 
 namespace dnn {
@@ -98,6 +99,8 @@ public:
 
     int label();
 
+    void wordCreation(Ptr _self, Ptr _matched);
+
 private:
     Entity(){};
 
@@ -105,9 +108,9 @@ private:
     std::vector<int> dfs_;
 
     /// pose from dataframe view
-    std::map<int, Eigen::Matrix4f> poses_;
-    std::map<int, Eigen::Vector3f> positions_;
-    std::map<int, Eigen::Quaternionf> orientations_;
+    std::map<int, Eigen::Matrix4f>      poses_;
+    std::map<int, Eigen::Vector3f>      positions_;
+    std::map<int, Eigen::Quaternionf>   orientations_;
 
     /// 3D
     std::map<int, typename pcl::PointCloud<PointType_>::Ptr> denseClouds_;
@@ -115,7 +118,7 @@ private:
 
     /// 2D
     std::map<int, std::vector<cv::Point2f>> projections_;
-    std::map<int, cv::Mat> descriptors_;
+    std::map<int, cv::Mat>                  descriptors_;
 
     /// detection
     int label_;
@@ -130,6 +133,9 @@ private:
 
     /// visibility
     std::map<int, Eigen::Matrix4f> covisibility_; // dataframe id and pose
+
+    // words
+    std::map<int, std::shared_ptr<mico::Word<PointType_>>> wordsReference_;
 };
 
 template <typename PointType_>

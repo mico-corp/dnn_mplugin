@@ -242,4 +242,24 @@ namespace dnn {
     inline int Entity<PointType_>::label(){
         return label_;
     }
+
+    template<typename PointType_>    
+    inline void Entity<PointType_>::wordCreation(Entity<PointType_>::Ptr _self, Entity<PointType_>::Ptr _matched){
+        auto prevEntity = _matched;
+        auto selfRef = _self;
+
+
+        int prevEntityDf = 1;
+        int selfRefDf = 1;
+        typename pcl::PointCloud<PointType_>::Ptr transformedFeatureCloud(new pcl::PointCloud<PointType_>());
+        pcl::transformPointCloud(*prevEntity->featureCloud(prevEntityDf), *transformedFeatureCloud, prevEntity->dfpose(prevEntityDf));
+        //std::vector<cv::DMatch> cvInliers = selfRef->crossReferencedInliers()[prevDf->id()];
+
+
+
+
+
+
+    }
+
 }
