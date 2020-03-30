@@ -99,8 +99,14 @@ public:
 
     int label();
 
-    void wordCreation(Ptr _self, Ptr _matched);
+    void wordCreation(int _queryDfId, int _trainDfId);
 
+    // gives the inliers between dataframes [Df][Df][Matches]
+    std::map<int , std::map<int, std::vector<cv::DMatch>>>& crossReferencedInliers();
+
+    std::map<int, std::shared_ptr<mico::Word<PointType_>>> words();
+
+    void addWord(const std::shared_ptr<mico::Word<PointType_>> &_word);
 private:
     Entity(){};
 
@@ -135,7 +141,10 @@ private:
     std::map<int, Eigen::Matrix4f> covisibility_; // dataframe id and pose
 
     // words
-    std::map<int, std::shared_ptr<mico::Word<PointType_>>> wordsReference_;
+    std::map<int, std::shared_ptr<mico::Word<PointType_>>>  wordsReference_;
+    std::map<int , std::map<int, std::vector<cv::DMatch>>>  multimatchesInliersDfs_;     // [Df][Df][Matches]
+    mutable std::mutex dataLock_; 
+
 };
 
 template <typename PointType_>
