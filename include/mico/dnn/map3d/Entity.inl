@@ -66,7 +66,7 @@ namespace dnn {
 
     template<typename PointType_>
     inline void Entity<PointType_>::updateCovisibility(int _dataframeId, Eigen::Matrix4f &_pose){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         covisibility_[_dataframeId] = _pose;
 
         // check for new dataframe
@@ -76,13 +76,13 @@ namespace dnn {
     
     template<typename PointType_>
     inline int Entity<PointType_>::id() const{
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         return id_;
     }
 
     template<typename PointType_>
     inline void Entity<PointType_>::pose(int _dataframeId, Eigen::Matrix4f &_pose){
-            std::lock_guard<std::mutex> lock(dataLock_);
+            // std::lock_guard<std::mutex> lock(dataLock_);
             poses_[_dataframeId]   = _pose;
             positions_[_dataframeId]   = _pose.block<3,1>(0,3);
             orientations_[_dataframeId]   = Eigen::Quaternionf(_pose.block<3,3>(0,0));
@@ -90,25 +90,25 @@ namespace dnn {
 
     template<typename PointType_>
     inline Eigen::Matrix4f Entity<PointType_>::pose(int _dataframeId){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         return poses_[_dataframeId];
     }
 
     template<typename PointType_>
     inline void Entity<PointType_>::dfpose(int _dataframeId, Eigen::Matrix4f &_pose){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         covisibility_[_dataframeId]   = _pose;
     }
 
     template<typename PointType_>
     inline Eigen::Matrix4f Entity<PointType_>::dfpose(int _dataframeId){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         return covisibility_[_dataframeId];
     }
 
     template<typename PointType_>
     inline void Entity<PointType_>::projections(int _dataframeId, std::vector<cv::Point2f> _projections){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         projections_[_dataframeId] = _projections;
         // check for new dataframe
         if(std::find(dfs_.begin(), dfs_.end(), _dataframeId) == dfs_.end())
@@ -117,13 +117,13 @@ namespace dnn {
 
     template<typename PointType_>
     inline std::vector<cv::Point2f> Entity<PointType_>::projections(int _dataframeId){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         return projections_[_dataframeId];
     }
 
     template<typename PointType_>
     inline void Entity<PointType_>::descriptors(int _dataframeId, cv::Mat _descriptors){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         descriptors_[_dataframeId] = _descriptors.clone();
         // check for new dataframe
         if(std::find(dfs_.begin(), dfs_.end(), _dataframeId) == dfs_.end())
@@ -132,13 +132,13 @@ namespace dnn {
 
     template<typename PointType_>
     inline cv::Mat Entity<PointType_>::descriptors(int _dataframeId){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         return descriptors_[_dataframeId];
     }
 
     template<typename PointType_>
     inline void Entity<PointType_>::cloud(int _dataframeId, typename pcl::PointCloud<PointType_>::Ptr &_cloud){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         denseClouds_[_dataframeId] = _cloud;
         // check for new dataframe
         if(std::find(dfs_.begin(), dfs_.end(), _dataframeId) == dfs_.end())
@@ -147,13 +147,13 @@ namespace dnn {
 
     template<typename PointType_>
     inline typename pcl::PointCloud<PointType_>::Ptr  Entity<PointType_>::cloud(int _dataframeId){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         return denseClouds_[_dataframeId];
     }
 
     template<typename PointType_>
     inline void Entity<PointType_>::featureCloud(int _dataframeId, typename pcl::PointCloud<PointType_>::Ptr &_cloud){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         featureClouds_[_dataframeId] = _cloud;
         // check for new dataframe
         if(std::find(dfs_.begin(), dfs_.end(), _dataframeId) == dfs_.end())
@@ -162,13 +162,13 @@ namespace dnn {
 
     template<typename PointType_>
     inline typename pcl::PointCloud<PointType_>::Ptr  Entity<PointType_>::featureCloud(int _dataframeId){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         return featureClouds_[_dataframeId];
     }
 
     template<typename PointType_>
     inline void Entity<PointType_>::boundingbox(int _dataframeId, std::vector<float> _bb){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         boundingbox_[_dataframeId] = _bb;
         // check for new dataframe
         if(std::find(dfs_.begin(), dfs_.end(), _dataframeId) == dfs_.end())
@@ -177,13 +177,13 @@ namespace dnn {
 
     template<typename PointType_>
     inline std::vector<float> Entity<PointType_>::boundingbox(int _dataframeId){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         return boundingbox_[_dataframeId];
     };
 
     template<typename PointType_>    
     inline void Entity<PointType_>::boundingCube(int _dataframeId, std::vector<float> _bc){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         boundingcube_[_dataframeId] = _bc;
         if(std::find(dfs_.begin(), dfs_.end(), _dataframeId) == dfs_.end())
             dfs_.push_back(_dataframeId);
@@ -191,25 +191,25 @@ namespace dnn {
 
     template<typename PointType_>    
     inline std::vector<float> Entity<PointType_>::boundingCube(int _dataframeId){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         return boundingcube_[_dataframeId];
     };
 
     template<typename PointType_>    
     inline std::vector<int> Entity<PointType_>::dfs(){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         return dfs_;
     };
 
     template<typename PointType_>    
     inline std::shared_ptr<Cube> Entity<PointType_>::cube(){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         return cube_;
     };
 
     template<typename PointType_>    
     inline float Entity<PointType_>::percentageOverlapped(std::shared_ptr<dnn::Entity<PointType_>> _e){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         std::vector<Eigen::Vector3f> inter;
         auto queryCube = _e->cube();
         // compute intersection of two cubes
@@ -224,7 +224,7 @@ namespace dnn {
 
     template<typename PointType_>    
     inline void Entity<PointType_>::update(std::shared_ptr<dnn::Entity<PointType_>> _e){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         for(auto &df: _e->dfs()){
             confidence_[df] = _e->confidence(df);
             boundingCube(df, boundingCube(df));
@@ -234,7 +234,7 @@ namespace dnn {
 
     template<typename PointType_>    
     inline void Entity<PointType_>::confidence(int _df, float _confidence){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         if ( confidence_.find(_df) == confidence_.end() ) {
             // not found 
             confidence_[_df] = _confidence;
@@ -246,51 +246,68 @@ namespace dnn {
 
     template<typename PointType_>    
     inline float Entity<PointType_>::confidence(int _df){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         return confidence_[_df];
     }
 
     template<typename PointType_>    
     inline std::string Entity<PointType_>::name(){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         return name_;
     }
 
     template<typename PointType_>    
     inline void Entity<PointType_>::name(std::string _name, cv::Scalar _color){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         name_ = _name;
         color_ = _color;
     }
 
     template<typename PointType_>    
     inline cv::Scalar Entity<PointType_>::color(){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         return color_;
     }
 
     template<typename PointType_>    
     inline int Entity<PointType_>::label(){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         return label_;
     }
 
     template<typename PointType_>
     inline std::map<int , std::map<int, std::vector<cv::DMatch>>>& Entity<PointType_>::crossReferencedInliers(){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         return multimatchesInliersDfs_;
     }
 
     template<typename PointType_>
     inline  std::map<int, std::shared_ptr<mico::Word<PointType_>>> Entity<PointType_>::words(){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         return wordsReference_;
     }
 
     template<typename PointType_>
     inline void Entity<PointType_>::addWord(const std::shared_ptr<mico::Word<PointType_>> &_word){
-        std::lock_guard<std::mutex> lock(dataLock_);
+        // std::lock_guard<std::mutex> lock(dataLock_);
         wordsReference_[_word->id] = _word;
+    }
+
+    template<typename PointType_>
+    inline void Entity<PointType_>::createWords(){
+        // try to create words with every dataframe related with other trought the multi matches inliers
+        for(auto &firstDf: multimatchesInliersDfs_){
+            for(auto &secondDf: firstDf.second){
+                // if match not computed
+                if(!( createdWordsBetweenDfs_.find(std::make_pair(firstDf.first, secondDf.first)) == createdWordsBetweenDfs_.end() )){
+                    if(createdWordsBetweenDfs_[std::make_pair(firstDf.first, secondDf.first)] == false){
+                        wordCreation(firstDf.first, secondDf.first);
+                        createdWordsBetweenDfs_[std::make_pair(firstDf.first, secondDf.first)] = true;
+                        createdWordsBetweenDfs_[std::make_pair(secondDf.first, firstDf.first)] = true;
+                    }
+                }
+            }
+        }
     }
 
     template<typename PointType_>    
@@ -332,14 +349,14 @@ namespace dnn {
                 if (prevWord->dfMap.find(_queryDfId) == prevWord->dfMap.end()) {
                     std::vector<float> projection = {   projections(_queryDfId)[inlierIdxInQuery].x,
                                                         projections(_queryDfId)[inlierIdxInQuery].y};
-                    // prevWord->addObservation(selfRef, inlierIdxInQuery, projection);    /// TODO
+                    prevWord->addObservation(dfMap_[_queryDfId], inlierIdxInQuery, projection);    /// TODO
                     addWord(prevWord);
                     
                     // 666 CHECK IF IT IS NECESARY
                     for (auto &df : prevWord->dfMap) {
-                        // selfRef->appendCovisibility(df.second); // TODO -------------------------------------------------------------------------------------
+                        dfMap_[_queryDfId]->appendCovisibility(df.second); // TODO -------------------------------------------------------------------------------------
                         // Add current dataframe id to others dataframe covisibility
-                        // df.second->appendCovisibility(selfRef); // TODO -------------------------------------------------------------------------------------
+                        dfMap_[_trainDfId]->appendCovisibility(dfMap_[_queryDfId]); // TODO -------------------------------------------------------------------------------------
                     }
                 }
             }
@@ -357,17 +374,17 @@ namespace dnn {
                 // Add word to new dataframe (new dataframe is representative of the new dataframe)
                 std::vector<float> dataframeProjections = { projections(_queryDfId)[inlierIdxInQuery].x, 
                                                             projections(_queryDfId)[inlierIdxInQuery].y};
-                // newWord->addObservation(selfRef, inlierIdxInQuery, dataframeProjections);       // TODO -------------------------------------------------------------------------------------
-                // appendCovisibility(prevDf);  // TODO -------------------------------------------------------------------------------------
+                newWord->addObservation(dfMap_[_queryDfId], inlierIdxInQuery, dataframeProjections);       // TODO -------------------------------------------------------------------------------------
+                // appendCovisibility(dfMap[_trainDfId]);  // TODO -------------------------------------------------------------------------------------
                 addWord(newWord);
 
                 // Add word to last dataframe
                 std::vector<float> projection = {   projections(_trainDfId)[inlierIdxInTrain].x, 
                                                     projections(_trainDfId)[inlierIdxInTrain].y};
-                // newWord->addObservation(prevDf, inlierIdxInTrain, projection); // TODO -------------------------------------------------------------------------------------
+                // newWord->addObservation(dfMap[_trainDfId], inlierIdxInTrain, projection); // TODO -------------------------------------------------------------------------------------
                 
-                // prevDf->appendCovisibility(prevDf); 
-                // prevDf->addWord(newWord);
+                // prevDf->appendCovisibility(dfMap[_trainDfId]); 
+                dfMap_[_trainDfId]->addWord(newWord);
             }
         }
 

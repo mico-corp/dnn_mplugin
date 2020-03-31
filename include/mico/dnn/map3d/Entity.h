@@ -108,12 +108,13 @@ public:
     std::map<int, std::shared_ptr<mico::Word<PointType_>>> words();
 
     void addWord(const std::shared_ptr<mico::Word<PointType_>> &_word);
+
+    void createWords();
 private:
     Entity(){};
 
     size_t id_;
     std::vector<int> dfs_;
-    std::map<int, std::shared_ptr<mico::Dataframe<PointType_>>> dfMap_;
     /// pose from dataframe view
     std::map<int, Eigen::Matrix4f>      poses_;
     std::map<int, Eigen::Vector3f>      positions_;
@@ -144,6 +145,8 @@ private:
     // words
     std::map<int, std::shared_ptr<mico::Word<PointType_>>>  wordsReference_;
     std::map<int , std::map<int, std::vector<cv::DMatch>>>  multimatchesInliersDfs_;     // [Df][Df][Matches]
+    std::map<int, std::shared_ptr<mico::Dataframe<PointType_>>> dfMap_;
+    std::map<std::pair<int, int>, bool> createdWordsBetweenDfs_;
     mutable std::mutex dataLock_; 
 
 };
