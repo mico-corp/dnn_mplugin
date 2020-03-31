@@ -127,7 +127,7 @@ namespace dnn{
                                             for(auto &detection: detections){
                                                if(detection[1] > confidenceThreshold_){
                                                     std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>> e(new dnn::Entity<pcl::PointXYZRGBNormal>(
-                                                         numEntities_, df->id(), detection[0], detection[1], {detection[2],detection[3],detection[4],detection[5]}));  
+                                                         numEntities_, df, detection[0], detection[1], {detection[2],detection[3],detection[4],detection[5]}));  
                                                     pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr entityCloud(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
                                                     pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr entityFeatureCloud(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
                                                     std::vector<cv::Point2f> entityProjections;
@@ -181,10 +181,8 @@ namespace dnn{
                                                         if(entityCloud->size() > 400){
                                                             pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_out(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
                                                             if(radiusFilter_){
-                                                                std::cout << "[BlockDarknet] Starting radius removal" << std::endl;
                                                                 mico::radiusFilter<pcl::PointXYZRGBNormal>(entityCloud, cloud_out, radiusSearch_, minNeighbors_);
                                                             }else if(minCutFilter_){
-                                                                std::cout << "[BlockDarknet] Starting min cut removal" << std::endl;
 
                                                                 // estimate entity radius
                                                                 pcl::PointXYZRGBNormal center = entityCloud->points[ entityCloud->points.size() / 2];
@@ -215,7 +213,6 @@ namespace dnn{
 
                                                                 // add cloud to the entity
                                                                 e->cloud(df->id(), cloud_out);
-                                                                std::cout << "[BlockDarknet] Computing PCA " << std::endl;
                                                                 // compute PCA
                                                                 if(e->computePose(df->id())){
                                                                     entities.push_back(e);
@@ -250,8 +247,11 @@ namespace dnn{
                                                 }
                                             }
                                             // send entities
-                                            if(entities.size() > 0 && getPipe("Entities")->registrations() !=0 )
+                                            if(entities.size() > 0 && getPipe("Entities")->registrations() !=0 ){
                                                 getPipe("Entities")->flush(entities);
+                                                std::cout << "[BlockDarknet] Flushed " << entities.size() << " entities" << std::endl;
+
+                                            }
                                             // send image with detections
                                             if(getPipe("Color Image")->registrations() !=0 ){
                                                 
@@ -379,7 +379,7 @@ namespace dnn{
         int index = 0;
         for(std::string line; getline(file, line);){
             objNames_[index] = std::make_pair(line, obj_id_to_color(index));
-            std::cout << "[Block Darknet] Object id " << index << " name " << line << std::endl;
+            std::cout << "[Block Darknet] Object id " << index << " " << line << std::endl;
             index++;
         }
         std::cout << "[Block Darknet] Objects names loaded \n";

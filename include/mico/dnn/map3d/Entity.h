@@ -34,6 +34,7 @@
 
 #include <mico/slam/utils3d.h>
 #include <mico/slam/Word.h>
+#include <mico/slam/Dataframe.h>
 #include <mico/dnn/utils/Cube.h>
 
 namespace dnn {
@@ -45,7 +46,7 @@ struct Entity
 public:
     typedef std::shared_ptr<Entity<PointType_>> Ptr;
 
-    Entity(int _id, int _dataframeId, int _label, float _confidence, std::vector<float> _boundingbox);
+    Entity(int _id, std::shared_ptr<mico::Dataframe<PointType_>> _df, int _label, float _confidence, std::vector<float> _boundingbox);
     Entity(int _id, int _label, float _confidence, std::vector<float> _boundingbox);
 
     bool computePose(int _dataframeId); // 666 change name
@@ -112,7 +113,7 @@ private:
 
     size_t id_;
     std::vector<int> dfs_;
-
+    std::map<int, std::shared_ptr<mico::Dataframe<PointType_>>> dfMap_;
     /// pose from dataframe view
     std::map<int, Eigen::Matrix4f>      poses_;
     std::map<int, Eigen::Vector3f>      positions_;

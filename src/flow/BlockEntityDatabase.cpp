@@ -41,6 +41,8 @@ namespace dnn{
                                         auto entities = _data.get<std::vector<std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>>>("Entities"); 
                                         // store the new entities
                                         std::vector<std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>> newEntities;
+                                        if(entities.size()> 0)
+                                            std::cout << "[BlockEntityDatabase] Started entity database with first entity id " << entities[0]->id() << std::endl; 
                                         if(!entities_.empty()){
                                             // candidates
                                             for(auto queryE: entities){

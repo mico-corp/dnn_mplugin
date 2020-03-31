@@ -23,17 +23,22 @@
 namespace dnn {
 
     template<typename PointType_>
-    inline Entity<PointType_>::Entity(int _id, int _dataframeId, int _label, float _confidence, std::vector<float> _boundingbox){
+    inline Entity<PointType_>::Entity(int _id, std::shared_ptr<mico::Dataframe<PointType_>> _df, int _label, float _confidence, std::vector<float> _boundingbox){
         id_ = _id;
         label_ = _label;
-        confidence_[_dataframeId] = _confidence;
-        boundingbox_[_dataframeId] = _boundingbox;
-        dfs_.push_back(_dataframeId);
+        confidence_[_df->id()] = _confidence;
+        boundingbox_[_df->id()] = _boundingbox;
+        dfs_.push_back(_df->id());
+        dfMap_[_df->id()] = _df;
     }
 
     template<typename PointType_>
-    inline Entity<PointType_>::Entity(int _id, int _label, float _confidence, std::vector<float> _boundingbox):
-    Entity(_id, 0,_label, _confidence,  _boundingbox){
+    inline Entity<PointType_>::Entity(int _id, int _label, float _confidence, std::vector<float> _boundingbox){
+        id_ = _id;
+        label_ = _label;
+        confidence_[0] = _confidence;
+        boundingbox_[0] = _boundingbox;
+        dfs_.push_back(0);
     }
 
     template<typename PointType_>
@@ -293,14 +298,14 @@ namespace dnn {
 
         // check if its posible
         if ( !(multimatchesInliersDfs_.find(_queryDfId) == multimatchesInliersDfs_.end()) ) {
-            std::cerr << "[Entity] Trying to create words in entity " << id_ << " not seen by dataframe " << _queryDfId << std::endl;
+            std::cerr << "[Entity] Trying to create words in entity " << id_ << " and not seen by dataframe " << _queryDfId << std::endl;
             return;
         }
         // get matches of the dataframe  
         std::map<int, std::vector<cv::DMatch>> dfMatches = multimatchesInliersDfs_[_queryDfId];
 
         if ( !(dfMatches.find(_trainDfId) == dfMatches.end()) ) {
-            std::cerr << "[Entity] Trying to create words in entity " << id_ << " not seen by dataframe " << _trainDfId << std::endl;
+            std::cerr << "[Entity] Trying to create words in entity " << id_ << " and not seen by dataframe " << _trainDfId << std::endl;
             return;
         }
 
