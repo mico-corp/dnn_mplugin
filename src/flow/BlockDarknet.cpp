@@ -209,7 +209,7 @@ namespace dnn{
                                                                 Eigen::Matrix4f dfPose = df->pose();
 
                                                                 // add dataframe id and his pose
-                                                                e->updateCovisibility(df->id(), dfPose);
+                                                                e->updateDfPose(df->id(), dfPose);
 
                                                                 // add cloud to the entity
                                                                 e->cloud(df->id(), cloud_out);

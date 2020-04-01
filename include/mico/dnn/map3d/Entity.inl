@@ -30,6 +30,12 @@ namespace dnn {
         boundingbox_[_df->id()] = _boundingbox;
         dfs_.push_back(_df->id());
         dfMap_[_df->id()] = _df;
+        auto mmi = _df->crossReferencedInliers();
+        for(auto match: mmi){
+            crossReferencedInliers(_df->id(), match.first, match.second);
+            std::cout  << "[Entity] Entity " << id() << " created matches " << _df->id() << " with " << match.first << std::endl;
+            createdWordsBetweenDfs_[std::make_pair(_df->id(), match.first)] = false;
+        }
     }
 
     template<typename PointType_>
@@ -41,6 +47,32 @@ namespace dnn {
         dfs_.push_back(0);
     }
 
+    template<typename PointType_>    
+    inline void Entity<PointType_>::update(std::shared_ptr<dnn::Entity<PointType_>> _e){
+        // std::lock_guard<std::mutex> lock(dataLock_);
+
+        for(auto &df: _e->dfMap()){
+            int dfId = df.second->id();
+            dfs_.push_back(dfId);
+            boundingCube(dfId, boundingCube(dfId));
+            confidence_[dfId] = _e->confidence(dfId);
+            auto featurecloud = df.second->featureCloud();
+            featureCloud(dfId, featurecloud);
+            dfPose_[dfId] = df.second->pose();
+            auto mmi = df.second->crossReferencedInliers();
+            for(auto match: mmi){
+                std::cout << "[Entity] Entity " << id() << " Created matches " << df.second->id() << " with " << match.first << std::endl;
+                crossReferencedInliers(df.second->id(), match.first, match.second);
+                createdWordsBetweenDfs_[std::make_pair(df.second->id(), match.first)] = false;
+            }
+        }
+    }
+
+    template<typename PointType_>    
+    inline std::map<int, std::shared_ptr<mico::Dataframe<PointType_>>> Entity<PointType_>::dfMap(){
+        return dfMap_;
+    }
+
     template<typename PointType_>
     inline bool Entity<PointType_>::computePose(int _dataframeId){   // 666 _dataframeId to compute pose with several clouds        
         Eigen::Matrix4f pose = Eigen::Matrix4f::Identity();
@@ -50,7 +82,7 @@ namespace dnn {
             return false;
 
         poses_[_dataframeId] = pose;   // to global pose 666 check this
-        // poses_[_dataframeId] = pose * covisibility_[_dataframeId];   // to global pose 666 check this
+        // poses_[_dataframeId] = pose * dfPose_[_dataframeId];   // to global pose 666 check this
         positions_[_dataframeId] = pose.block(0,3,3,1);
         Eigen::Quaternionf q(pose.block<3,3>(0,0));
         orientations_[_dataframeId] = q;
@@ -59,15 +91,15 @@ namespace dnn {
         float width = bc[0] - bc[1]; 
         float heigth = bc[2] - bc[3]; 
         float deep = bc[4] - bc[5];
-        auto globalCubePose = covisibility_[_dataframeId] * pose;
+        auto globalCubePose = dfPose_[_dataframeId] * pose;
         cube_ = std::make_shared<Cube>(1, globalCubePose, width, heigth, deep);
         return true;
     }
 
     template<typename PointType_>
-    inline void Entity<PointType_>::updateCovisibility(int _dataframeId, Eigen::Matrix4f &_pose){
+    inline void Entity<PointType_>::updateDfPose(int _dataframeId, Eigen::Matrix4f &_pose){
         // std::lock_guard<std::mutex> lock(dataLock_);
-        covisibility_[_dataframeId] = _pose;
+        dfPose_[_dataframeId] = _pose;
 
         // check for new dataframe
         if(std::find(dfs_.begin(), dfs_.end(), _dataframeId) == dfs_.end())
@@ -97,13 +129,13 @@ namespace dnn {
     template<typename PointType_>
     inline void Entity<PointType_>::dfpose(int _dataframeId, Eigen::Matrix4f &_pose){
         // std::lock_guard<std::mutex> lock(dataLock_);
-        covisibility_[_dataframeId]   = _pose;
+        dfPose_[_dataframeId]   = _pose;
     }
 
     template<typename PointType_>
     inline Eigen::Matrix4f Entity<PointType_>::dfpose(int _dataframeId){
         // std::lock_guard<std::mutex> lock(dataLock_);
-        return covisibility_[_dataframeId];
+        return dfPose_[_dataframeId];
     }
 
     template<typename PointType_>
@@ -223,16 +255,6 @@ namespace dnn {
     };
 
     template<typename PointType_>    
-    inline void Entity<PointType_>::update(std::shared_ptr<dnn::Entity<PointType_>> _e){
-        // std::lock_guard<std::mutex> lock(dataLock_);
-        for(auto &df: _e->dfs()){
-            confidence_[df] = _e->confidence(df);
-            boundingCube(df, boundingCube(df));
-            dfs_.push_back(df);
-        }
-    }
-
-    template<typename PointType_>    
     inline void Entity<PointType_>::confidence(int _df, float _confidence){
         // std::lock_guard<std::mutex> lock(dataLock_);
         if ( confidence_.find(_df) == confidence_.end() ) {
@@ -282,6 +304,12 @@ namespace dnn {
     }
 
     template<typename PointType_>
+    inline void Entity<PointType_>::crossReferencedInliers(int _dfi, int _dfj, std::vector<cv::DMatch> _matches){
+        multimatchesInliersDfs_[_dfi][_dfj] = _matches;
+    }
+
+
+    template<typename PointType_>
     inline  std::map<int, std::shared_ptr<mico::Word<PointType_>>> Entity<PointType_>::words(){
         // std::lock_guard<std::mutex> lock(dataLock_);
         return wordsReference_;
@@ -295,44 +323,68 @@ namespace dnn {
 
     template<typename PointType_>
     inline void Entity<PointType_>::createWords(){
-        // try to create words with every dataframe related with other trought the multi matches inliers
-        for(auto &firstDf: multimatchesInliersDfs_){
-            for(auto &secondDf: firstDf.second){
-                // if match not computed
-                if(!( createdWordsBetweenDfs_.find(std::make_pair(firstDf.first, secondDf.first)) == createdWordsBetweenDfs_.end() )){
-                    if(createdWordsBetweenDfs_[std::make_pair(firstDf.first, secondDf.first)] == false){
-                        wordCreation(firstDf.first, secondDf.first);
-                        createdWordsBetweenDfs_[std::make_pair(firstDf.first, secondDf.first)] = true;
-                        createdWordsBetweenDfs_[std::make_pair(secondDf.first, firstDf.first)] = true;
-                    }
+        // try to create words with every dataframe related with other trought the multi matches inliers 
+        // multimatchesInliersDfs_ [df1][df2][cv::Match]
+        
+        // for(auto &firstDf: multimatchesInliersDfs_){
+        //     for(auto &secondDf: firstDf.second){
+        //         std::cout << firstDf.first << " and " << secondDf.first << std::endl;;
+        //         // if match is computed
+        //         if(!( createdWordsBetweenDfs_.find(std::make_pair(firstDf.first, secondDf.first)) == createdWordsBetweenDfs_.end() )){
+        //             // words not created with the inliers
+        //             if(createdWordsBetweenDfs_[std::make_pair(firstDf.first, secondDf.first)] == false){
+        //                 wordCreation(firstDf.first, secondDf.first);
+        //                 createdWordsBetweenDfs_[std::make_pair(firstDf.first, secondDf.first)] = true;
+        //                 createdWordsBetweenDfs_[std::make_pair(secondDf.first, firstDf.first)] = true;
+        //             }
+        //         }
+        //     }
+        // }
+        std::cout << "[Entity] Entity " << id() << " has dataframes: ";
+        for(auto &df: dfs_){
+            std::cout << df << " ";
+        }
+        for(auto &pairs: createdWordsBetweenDfs_){
+            if(!pairs.second ){
+                std::cout << std::endl;
+                // both df must belong to the entity
+                if((std::find(dfs_.begin(), dfs_.end(), pairs.first.first) != dfs_.end() )&& (std::find(dfs_.begin(), dfs_.end(), pairs.first.second) != dfs_.end() )){
+                    std::cout << "[Entity] Entity " << id() << " Trying to create words between " << pairs.first.first << " and " << pairs.first.second << std::endl;
+                    wordCreation(pairs.first.first, pairs.first.second);
+                    pairs.second = true;
                 }
             }
         }
+
+
     }
 
     template<typename PointType_>    
     inline void Entity<PointType_>::wordCreation(int _queryDfId, int _trainDfId){         // newer-older  self-previous
 
         // check if its posible
-        if ( !(multimatchesInliersDfs_.find(_queryDfId) == multimatchesInliersDfs_.end()) ) {
-            std::cerr << "[Entity] Trying to create words in entity " << id_ << " and not seen by dataframe " << _queryDfId << std::endl;
+        if (multimatchesInliersDfs_.find(_queryDfId) == multimatchesInliersDfs_.end()) {
+            std::cerr << "[Entity] Entity " << id() << " Trying to create words in entity " << id_ << " and not seen by query dataframe " << _queryDfId << std::endl;
             return;
         }
+        std::cout << "[Entity] Entity " << id() << " Trying to create words in entity " << id_ << " and seen by query dataframe " << _queryDfId << std::endl;
         // get matches of the dataframe  
         std::map<int, std::vector<cv::DMatch>> dfMatches = multimatchesInliersDfs_[_queryDfId];
 
-        if ( !(dfMatches.find(_trainDfId) == dfMatches.end()) ) {
-            std::cerr << "[Entity] Trying to create words in entity " << id_ << " and not seen by dataframe " << _trainDfId << std::endl;
+        if (dfMatches.find(_trainDfId) == dfMatches.end() ) {
+            std::cerr << "[Entity] Trying to create words in entity " << id_ << " and not seen by train dataframe " << _trainDfId << std::endl;
             return;
         }
 
+        std::cout << "[Entity] Entity " << id() << " Trying to create words in entity " << id_ << " and seen by train dataframe " << _trainDfId << std::endl;
         // try to create new words or update pre-existing words with the rest of dataframes in the entity
         std::vector<cv::DMatch> cvInliers = dfMatches[_trainDfId];
 
         // transform feature cloud of last dataframe feature cloud seen
         typename pcl::PointCloud<PointType_>::Ptr transformedFeatureCloud(new pcl::PointCloud<PointType_>());
-        pcl::transformPointCloud(*featureCloud(_trainDfId), *transformedFeatureCloud, dfpose(_trainDfId));
+        pcl::transformPointCloud(*featureCloud(_trainDfId), *transformedFeatureCloud, dfPose_[_trainDfId]);
 
+        std::cout << "[Entity] Entity " << id() << " Trying to create words in entity " << id_ << " and seen by train dataframe " << _trainDfId << std::endl;
         for (unsigned inlierIdx = 0; inlierIdx < cvInliers.size(); inlierIdx++){
             std::shared_ptr<mico::Word<PointType_>> prevWord = nullptr;
             int inlierIdxInQuery = cvInliers[inlierIdx].queryIdx;       
@@ -345,6 +397,7 @@ namespace dnn {
                     break;
                 }
             }
+        std::cout << "[Entity] Entity " << id() << " Trying to create words in entity " << id_ << " and seen by train dataframe " << _trainDfId << std::endl;
             if (prevWord) {
                 if (prevWord->dfMap.find(_queryDfId) == prevWord->dfMap.end()) {
                     std::vector<float> projection = {   projections(_queryDfId)[inlierIdxInQuery].x,
@@ -354,13 +407,14 @@ namespace dnn {
                     
                     // 666 CHECK IF IT IS NECESARY
                     for (auto &df : prevWord->dfMap) {
-                        dfMap_[_queryDfId]->appendCovisibility(df.second); // TODO -------------------------------------------------------------------------------------
+                        dfMap_[_queryDfId]->appendCovisibility(df.second); 
                         // Add current dataframe id to others dataframe covisibility
-                        dfMap_[_trainDfId]->appendCovisibility(dfMap_[_queryDfId]); // TODO -------------------------------------------------------------------------------------
+                        dfMap_[_trainDfId]->appendCovisibility(dfMap_[_queryDfId]); 
                     }
                 }
             }
             else {
+        std::cout << "[Entity] Entity " << id() << " Trying to create words in entity " << id_ << " and seen by train dataframe " << _trainDfId << std::endl;
                 // Create word
                 int wordId = 0;
                 if(wordsReference_.size()>0)
@@ -374,16 +428,17 @@ namespace dnn {
                 // Add word to new dataframe (new dataframe is representative of the new dataframe)
                 std::vector<float> dataframeProjections = { projections(_queryDfId)[inlierIdxInQuery].x, 
                                                             projections(_queryDfId)[inlierIdxInQuery].y};
-                newWord->addObservation(dfMap_[_queryDfId], inlierIdxInQuery, dataframeProjections);       // TODO -------------------------------------------------------------------------------------
+                newWord->addObservation(dfMap_[_queryDfId], inlierIdxInQuery, dataframeProjections);       
                 // appendCovisibility(dfMap[_trainDfId]);  // TODO -------------------------------------------------------------------------------------
                 addWord(newWord);
 
                 // Add word to last dataframe
                 std::vector<float> projection = {   projections(_trainDfId)[inlierIdxInTrain].x, 
                                                     projections(_trainDfId)[inlierIdxInTrain].y};
-                // newWord->addObservation(dfMap[_trainDfId], inlierIdxInTrain, projection); // TODO -------------------------------------------------------------------------------------
+                newWord->addObservation(dfMap_[_trainDfId], inlierIdxInTrain, projection); 
                 
                 // prevDf->appendCovisibility(dfMap[_trainDfId]); 
+        std::cout << "[Entity] Entity " << id() << " Trying to create words in entity " << id_ << " and seen by train dataframe " << _trainDfId << std::endl;
                 dfMap_[_trainDfId]->addWord(newWord);
             }
         }

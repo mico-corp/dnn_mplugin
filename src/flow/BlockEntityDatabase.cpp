@@ -82,7 +82,8 @@ namespace dnn{
                                                 else{
                                                     // update entity 
                                                     parentEntity->update(queryE);
-                                                    std::cout << "Updated entity " << parentEntity->id() << "(" << parentEntity->name() << ")" << "  overlaped% " << affinity << std::endl;
+                                                    parentEntity->createWords();
+                                                    std::cout << "[BlockEntityDatabase] Updated entity " << parentEntity->id() << "(" << parentEntity->name() << ")" << "  overlaped% " << affinity << " and creating words" << std::endl;
                                                 }
                                             }
                                         }else{
@@ -93,7 +94,13 @@ namespace dnn{
                                                 // check overlapping here maybe
                                             }
                                         }
-                                        // std::cout << "[BlockEntityDatabase]Number of entities: " << entities_.size() << std::endl;
+                                        for(auto &label: entities_){
+                                            for(auto &e: label.second){
+                                                std::cout << "[BlockEntityDatabase] Entity: " << e->id() <<  " (" << e->name() << ") has appeared in " << e->dfs().size() << " dataframes and contains " 
+                                                << e->words().size() << " words" << std::endl;
+                                            
+                                            }
+                                        }
                                         getPipe("Entities")->flush(newEntities);
                                         idle_ = true;
                                         #endif

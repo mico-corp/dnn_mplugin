@@ -79,7 +79,7 @@ public:
 
     std::vector<int> dfs();
 
-    void updateCovisibility(int _dataframeId, Eigen::Matrix4f &_pose);
+    void updateDfPose(int _dataframeId, Eigen::Matrix4f &_pose);
 
     std::shared_ptr<Cube> cube();
     
@@ -100,10 +100,14 @@ public:
 
     int label();
 
+    std::map<int, std::shared_ptr<mico::Dataframe<PointType_>>> dfMap();
+
     void wordCreation(int _queryDfId, int _trainDfId);
 
     // gives the inliers between dataframes [Df][Df][Matches]
     std::map<int , std::map<int, std::vector<cv::DMatch>>>& crossReferencedInliers();
+
+    void crossReferencedInliers(int _dfi, int _dfj, std::vector<cv::DMatch> _matches);
 
     std::map<int, std::shared_ptr<mico::Word<PointType_>>> words();
 
@@ -140,7 +144,7 @@ private:
     std::shared_ptr<Cube> cube_ = nullptr;
 
     /// visibility
-    std::map<int, Eigen::Matrix4f> covisibility_; // dataframe id and pose
+    std::map<int, Eigen::Matrix4f> dfPose_; // dataframe id and pose
 
     // words
     std::map<int, std::shared_ptr<mico::Word<PointType_>>>  wordsReference_;
