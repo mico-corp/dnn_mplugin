@@ -305,7 +305,9 @@ namespace dnn {
 
     template<typename PointType_>
     inline void Entity<PointType_>::crossReferencedInliers(int _dfi, int _dfj, std::vector<cv::DMatch> _matches){
+        std::lock_guard<std::mutex> lock(dataLock_);
         multimatchesInliersDfs_[_dfi][_dfj] = _matches;
+        createdWordsBetweenDfs_[std::make_pair(_dfi, _dfj)] = false;
     }
 
 
@@ -316,6 +318,12 @@ namespace dnn {
     }
 
     template<typename PointType_>
+    inline std::map<std::pair<int, int>, bool>& Entity<PointType_>::computedWords(){
+        std::lock_guard<std::mutex> lock(dataLock_);
+        return createdWordsBetweenDfs_;
+    }
+
+    template<typename PointType_>
     inline void Entity<PointType_>::addWord(const std::shared_ptr<mico::Word<PointType_>> &_word){
         std::lock_guard<std::mutex> lock(dataLock_);
         wordsReference_[_word->id] = _word;
@@ -323,23 +331,6 @@ namespace dnn {
 
     template<typename PointType_>
     inline void Entity<PointType_>::createWords(){
-        // try to create words with every dataframe related with other trought the multi matches inliers 
-        // multimatchesInliersDfs_ [df1][df2][cv::Match]
-        
-        // for(auto &firstDf: multimatchesInliersDfs_){
-        //     for(auto &secondDf: firstDf.second){
-        //         std::cout << firstDf.first << " and " << secondDf.first << std::endl;;
-        //         // if match is computed
-        //         if(!( createdWordsBetweenDfs_.find(std::make_pair(firstDf.first, secondDf.first)) == createdWordsBetweenDfs_.end() )){
-        //             // words not created with the inliers
-        //             if(createdWordsBetweenDfs_[std::make_pair(firstDf.first, secondDf.first)] == false){
-        //                 wordCreation(firstDf.first, secondDf.first);
-        //                 createdWordsBetweenDfs_[std::make_pair(firstDf.first, secondDf.first)] = true;
-        //                 createdWordsBetweenDfs_[std::make_pair(secondDf.first, firstDf.first)] = true;
-        //             }
-        //         }
-        //     }
-        // }
         std::lock_guard<std::mutex> lock(dataLock_);
         std::cout << "[Entity] Entity " << id() << " has dataframes: ";
         for(auto &df: dfs_){
@@ -347,7 +338,6 @@ namespace dnn {
         }
         for(auto &pairs: createdWordsBetweenDfs_){
             if(!pairs.second ){
-                std::cout << std::endl;
                 // both df must belong to the entity
                 if((std::find(dfs_.begin(), dfs_.end(), pairs.first.first) != dfs_.end() )&& (std::find(dfs_.begin(), dfs_.end(), pairs.first.second) != dfs_.end() )){
                     std::cout << "[Entity] Entity " << id() << " Trying to create words between " << pairs.first.first << " and " << pairs.first.second << std::endl;
@@ -356,8 +346,6 @@ namespace dnn {
                 }
             }
         }
-
-
     }
 
     template<typename PointType_>    

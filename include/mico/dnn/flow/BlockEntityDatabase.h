@@ -44,7 +44,8 @@ namespace dnn{
         std::string description() const override {return    "Block that implements a semantic database.\n"
                                                             "   - Inputs: \n"
                                                             "   - Outputs: \n";};
-                                                            
+    private:
+        void reinforceEntity(std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>);
     private:
         #ifdef HAS_DARKNET
             // [label][vector of entities]

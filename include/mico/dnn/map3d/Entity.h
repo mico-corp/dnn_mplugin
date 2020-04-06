@@ -87,33 +87,47 @@ public:
 
     void confidence(int _df, float _confidence);
 
+    // returns the confidence that the dataframe had in which the object was of that class 
     float confidence(int _df);
 
     // update the entity with anoter entity
     void update(std::shared_ptr<dnn::Entity<PointType_>> _e);
     
+    // returns the color of the object
     cv::Scalar color();
 
+    // returns name of the object
     std::string name();
-    
+    // update the name and color of the entity
     void name(std::string _name, cv::Scalar _color);
 
+    // returns the label of the object
     int label();
 
+    // returns a map with all the dataframes the entity has seen
     std::map<int, std::shared_ptr<mico::Dataframe<PointType_>>> dfMap();
-
-    void wordCreation(int _queryDfId, int _trainDfId);
 
     // gives the inliers between dataframes [Df][Df][Matches]
     std::map<int , std::map<int, std::vector<cv::DMatch>>>& crossReferencedInliers();
 
+    // add new matched features between two dataframes 
     void crossReferencedInliers(int _dfi, int _dfj, std::vector<cv::DMatch> _matches);
 
+    // returns map of computed words
+    std::map<std::pair<int, int>, bool>& computedWords();
+
+    // returns a map with the words that belong to the entity 
     std::map<int, std::shared_ptr<mico::Word<PointType_>>> words();
 
     void addWord(const std::shared_ptr<mico::Word<PointType_>> &_word);
 
+    // check the matched features between all the dataframes which saw the entity and create words 
     void createWords();
+
+
+private:
+    void wordCreation(int _queryDfId, int _trainDfId);
+    
 private:
     Entity(){};
 

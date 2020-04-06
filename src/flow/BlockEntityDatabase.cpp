@@ -112,6 +112,20 @@ namespace dnn{
     // BlockEntityDatabase::~BlockEntityDatabase(){
     // } 
 
+    void reinforceEntity(std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>> _e){
+        if(_e->dfs().size()>1){
+            auto dfs = _e->dfMap();
+            auto multimatchesinliers = _e->crossReferencedInliers();
+            auto createdWords = _e->computedWords();
+            // compare features from all detections 
+            for(auto &df: dfs){
+                // check if the matches are already computed
+
+            }
+        }
+    }
+
+
     bool BlockEntityDatabase::configure(std::unordered_map<std::string, std::string> _params){
         cjson::Json jParams;
         for(auto &param: _params){
