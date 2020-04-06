@@ -45,7 +45,7 @@ namespace dnn{
                                                             "   - Inputs: \n"
                                                             "   - Outputs: \n";};
     private:
-        void reinforceEntity(std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>);
+        bool reinforceEntity(std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>);
     private:
         #ifdef HAS_DARKNET
             // [label][vector of entities]

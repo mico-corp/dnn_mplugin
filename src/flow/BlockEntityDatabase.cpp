@@ -23,7 +23,7 @@
 #include <flow/Policy.h>
 #include <flow/Outpipe.h>
 #include <flow/DataFlow.h>
-
+#include <mico/slam/utils2d.h>
 #include <sstream>
 
 namespace dnn{
@@ -112,17 +112,42 @@ namespace dnn{
     // BlockEntityDatabase::~BlockEntityDatabase(){
     // } 
 
-    void reinforceEntity(std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>> _e){
+    bool reinforceEntity(std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>> _e){
         if(_e->dfs().size()>1){
             auto dfs = _e->dfMap();
             auto multimatchesinliers = _e->crossReferencedInliers();
             auto createdWords = _e->computedWords();
-            // compare features from all detections 
-            for(auto &df: dfs){
-                // check if the matches are already computed
+            int newMatches = 0;
 
+            // compare features from all detections 
+            for(auto &querydf: dfs){
+                for(auto &traindf: dfs){
+                    auto queryId = querydf.second->id();
+                    auto trainId = traindf.second->id();
+
+                    // avoid compare with himself
+                    if(queryId == trainId)
+                        continue;
+
+                    // check if the matches are already computed
+                    if((createdWords.find(std::make_pair(queryId, trainId)) == createdWords.end()) && (createdWords.find(std::make_pair(trainId, queryId)) == createdWords.end())){
+                        // compute the match
+                        std::vector<cv::DMatch> matches;
+                        if (!mico::matchDescriptorsBF(_e->descriptors(queryId), _e->descriptors(trainId), matches, 1, 8))
+                                continue;
+
+                        // add mmi
+                        _e->crossReferencedInliers(queryId, trainId, matches);
+                        newMatches++;
+                    }
+                }
+            }
+            if(newMatches > 0){
+                _e->createWords();
+                return true;
             }
         }
+        return false;
     }
 
 
