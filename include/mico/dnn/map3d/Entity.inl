@@ -59,6 +59,9 @@ namespace dnn {
             auto featurecloud = df.second->featureCloud();
             featureCloud(dfId, featurecloud);
             dfPose_[dfId] = df.second->pose();
+            dfMap_[dfId] = df.second;
+            descriptors_[dfId] = _e->descriptors(dfId);
+            projections_[dfId] = _e->projections(dfId);
             auto mmi = df.second->crossReferencedInliers();
             for(auto match: mmi){
                 std::cout << "[Entity] Entity " << id() << " Created matches " << df.second->id() << " with " << match.first << std::endl;
@@ -371,13 +374,14 @@ namespace dnn {
             return;
         }
 
-        std::cout << "\033[1;31m [Entity] Entity " << id() << " Trying to create words in entity " << id_ << " and seen by train dataframe " << _trainDfId << "\033[0m" << std::endl;
+        std::cout << "\033[1;31m[Entity] Entity " << id() << " Trying to create words in entity " << id_ << " and seen by train dataframe " << _trainDfId << "\033[0m" << std::endl;
         // try to create new words or update pre-existing words with the rest of dataframes in the entity
         std::vector<cv::DMatch> cvInliers = dfMatches[_trainDfId];
 
         // transform feature cloud of last dataframe feature cloud seen
         typename pcl::PointCloud<PointType_>::Ptr transformedFeatureCloud(new pcl::PointCloud<PointType_>());
         pcl::transformPointCloud(*featureCloud(_trainDfId), *transformedFeatureCloud, dfPose_[_trainDfId]);
+        std::cout << "\033[1;31m[Entity] Entity " << id() << " Trying to create words in entity " << id_ << " and seen by train dataframe " << _trainDfId << "\033[0m" << std::endl;
 
         for (unsigned inlierIdx = 0; inlierIdx < cvInliers.size(); inlierIdx++){
             std::shared_ptr<mico::Word<PointType_>> prevWord = nullptr;
@@ -432,6 +436,8 @@ namespace dnn {
                 // prevDf->appendCovisibility(dfMap[_trainDfId]); 
                 dfMap_[_trainDfId]->addWord(newWord);
             }
+        std::cout << "\033[1;31m[Entity] Entity " << id() << " Trying to create words in entity " << id_ << " and seen by train dataframe " << _trainDfId << "\033[0m" << std::endl;
+
         }
     }
 }

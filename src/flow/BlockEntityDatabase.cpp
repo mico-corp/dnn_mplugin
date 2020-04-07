@@ -120,6 +120,7 @@ namespace dnn{
     bool BlockEntityDatabase::reinforceEntity(std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>> _e){
         if(_e->dfs().size()>1){
             auto dfs = _e->dfMap();
+            std::cout << "\033[1;31m[BlockEntityDatabase] Started entity reinforce with " << dfs.size() << " dataframes \033[0m" << std::endl;
             auto createdWords = _e->computedWords();
             int newMatches = 0;
 
@@ -129,14 +130,20 @@ namespace dnn{
                     auto queryId = (*firstDf).second->id();
                     auto trainId = (*secondDf).second->id();
                     // check if the matches are already computed
+                    std::cout << "\033[1;31m[BlockEntityDatabase] Dataframe "<< queryId << " vs " << trainId << "\033[0m" << std::endl;
                     if((createdWords.find(std::make_pair(queryId, trainId)) == createdWords.end()) && (createdWords.find(std::make_pair(trainId, queryId)) == createdWords.end())){
                         // compute matches
                         std::vector<cv::DMatch> matches;
-                        if (!mico::matchDescriptorsBF(_e->descriptors(queryId), _e->descriptors(trainId), matches, 1, 8))
-                                continue;
+                        std::cout << "\033[1;31m[BlockEntityDatabase] Computing matches \033[0m" << std::endl;
+                        if (!mico::matchDescriptorsBF(_e->descriptors(queryId), _e->descriptors(trainId), matches, 1, 8)){
+                            
+                            std::cout << "\033[1;31m[BlockEntityDatabase] matches " << matches.size() << "\033[0m" << std::endl;
+                            continue;
+                        }
 
                         // add mmi
                         _e->crossReferencedInliers(queryId, trainId, matches);
+                        std::cout << "\033[1;31m[BlockEntityDatabase] new match created]\033[0m" << std::endl;
                         newMatches++;
                     }
                 }
