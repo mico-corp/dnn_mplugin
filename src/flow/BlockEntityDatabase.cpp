@@ -82,8 +82,13 @@ namespace dnn{
                                                 else{
                                                     // update entity 
                                                     parentEntity->update(queryE);
-                                                    parentEntity->createWords();
                                                     std::cout << "[BlockEntityDatabase] Updated entity " << parentEntity->id() << "(" << parentEntity->name() << ")" << "  overlaped% " << affinity << " and creating words" << std::endl;
+                                                    parentEntity->createWords();
+                                                    // create new matches inside entity features
+                                                    if(reinforceEntity(parentEntity)){
+                                                        // create new words with the new matches
+                                                        std::cout << "[BlockEntityDatabase] Finished entity " << parentEntity->id() << "(" << parentEntity->name() << ")" << " reinforce" << std::endl;
+                                                    }
                                                 }
                                             }
                                         }else{
@@ -112,26 +117,20 @@ namespace dnn{
     // BlockEntityDatabase::~BlockEntityDatabase(){
     // } 
 
-    bool reinforceEntity(std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>> _e){
+    bool BlockEntityDatabase::reinforceEntity(std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>> _e){
         if(_e->dfs().size()>1){
             auto dfs = _e->dfMap();
-            auto multimatchesinliers = _e->crossReferencedInliers();
             auto createdWords = _e->computedWords();
             int newMatches = 0;
 
-            // compare features from all detections 
-            for(auto &querydf: dfs){
-                for(auto &traindf: dfs){
-                    auto queryId = querydf.second->id();
-                    auto trainId = traindf.second->id();
-
-                    // avoid compare with himself
-                    if(queryId == trainId)
-                        continue;
-
+            // compare features descriptors between all dataframes of the entity e.g 1,2,3 ---> 1 vs 2, 1 vs 3 and 2 vs 3
+            for(auto firstDf = dfs.begin(); next(firstDf,1) != dfs.end() ; firstDf++){
+                for(auto secondDf = next(firstDf,1); secondDf != dfs.end(); secondDf++){
+                    auto queryId = (*firstDf).second->id();
+                    auto trainId = (*secondDf).second->id();
                     // check if the matches are already computed
                     if((createdWords.find(std::make_pair(queryId, trainId)) == createdWords.end()) && (createdWords.find(std::make_pair(trainId, queryId)) == createdWords.end())){
-                        // compute the match
+                        // compute matches
                         std::vector<cv::DMatch> matches;
                         if (!mico::matchDescriptorsBF(_e->descriptors(queryId), _e->descriptors(trainId), matches, 1, 8))
                                 continue;
@@ -142,6 +141,8 @@ namespace dnn{
                     }
                 }
             }
+            
+            // create new words 
             if(newMatches > 0){
                 _e->createWords();
                 return true;
