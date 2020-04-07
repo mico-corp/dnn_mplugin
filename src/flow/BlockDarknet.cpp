@@ -133,8 +133,8 @@ namespace dnn{
                                                     std::vector<cv::Point2f> entityProjections;
 
                                                     // elimate % of Rect (background)
-                                                    float uOff = 0.85;
-                                                    float dOff = 1.15;
+                                                    float uOff = 0.9;
+                                                    float dOff = 1.1;
                                                     if(featureProjections.size() > 0 && featureCloud != nullptr){
                                                         
                                                         // store feature projections and cloud
@@ -156,9 +156,14 @@ namespace dnn{
                                                             }
                                                             index++;
                                                         }
-                                                        e->featureCloud(df->id(), entityFeatureCloud);
-                                                        e->projections(df->id(), entityProjections);
-                                                        e->descriptors(df->id(), entityFeatureDescriptors);
+                                                        // dont allow entity without features or projections
+                                                        if(entityFeatureCloud->size() > 0 && entityProjections.size() > 0 && entityFeatureDescriptors.size().height > 0){
+                                                            e->featureCloud(df->id(), entityFeatureCloud);
+                                                            e->projections(df->id(), entityProjections);
+                                                            e->descriptors(df->id(), entityFeatureDescriptors);
+                                                        }
+                                                        else
+                                                            continue;
 
 
                                                         // store dense cloud
