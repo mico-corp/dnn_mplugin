@@ -178,6 +178,7 @@ namespace dnn{
         }
         std::cout << "[BlockEntityDatabase]Score selected: " << overlapScore_ << std::endl;
         std::cout << "[BlockEntityDatabase]Entities compared: " << comparedEntities_ << std::endl;
+        return true;
     }
     
     std::vector<std::string> BlockEntityDatabase::parameters(){
