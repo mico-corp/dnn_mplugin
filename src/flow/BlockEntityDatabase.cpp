@@ -30,7 +30,9 @@ namespace dnn{
 
     BlockEntityDatabase::BlockEntityDatabase(){ 
         createPipe("Entities", "v_entity");
-        
+
+        createPipe("Entities to optimize", "v_entity");
+
         createPolicy({{"Entities", "v_entity"}});
 
         registerCallback({"Entities"}, 
@@ -41,6 +43,7 @@ namespace dnn{
                                         auto entities = _data.get<std::vector<std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>>>("Entities"); 
                                         // store the new entities
                                         std::vector<std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>> newEntities;
+                                        std::vector<std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>> entitiesToOptimize;
                                         if(entities.size()> 0)
                                             std::cout << "[BlockEntityDatabase] Started entity database with first entity id " << entities[0]->id() << std::endl; 
                                         if(!entities_.empty()){
@@ -89,6 +92,8 @@ namespace dnn{
                                                         // create new words with the new matches
                                                         std::cout << "[BlockEntityDatabase] Finished entity " << parentEntity->id() << "(" << parentEntity->name() << ")" << " reinforce" << std::endl;
                                                     }
+                                                    if(parentEntity->dfs().size() > 3 && parentEntity->words().size() > 30)
+                                                        entitiesToOptimize.push_back(parentEntity);
                                                 }
                                             }
                                         }else{
@@ -107,6 +112,10 @@ namespace dnn{
                                             }
                                         }
                                         getPipe("Entities")->flush(newEntities);
+
+                                        if(entitiesToOptimize.size() > 0)
+                                            getPipe("Entities to optimize")->flush(entitiesToOptimize);
+
                                         idle_ = true;
                                         #endif
                                     }
