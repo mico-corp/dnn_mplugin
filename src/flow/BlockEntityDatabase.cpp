@@ -44,8 +44,8 @@ namespace dnn{
                                         // store the new entities
                                         std::vector<std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>> newEntities;
                                         std::vector<std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>> entitiesToOptimize;
-                                        if(entities.size()> 0)
-                                            std::cout << "[BlockEntityDatabase] Started entity database with first entity id " << entities[0]->id() << std::endl; 
+                                        // if(entities.size()> 0)
+                                        //     std::cout << "[BlockEntityDatabase] Started entity database with first entity id " << entities[0]->id() << std::endl; 
                                         if(!entities_.empty()){
                                             // candidates
                                             for(auto queryE: entities){
@@ -61,8 +61,8 @@ namespace dnn{
                                                 for(auto trainE = entities_[label].rbegin(); trainE != entities_[label].rend() && i < comparedEntities_; ++trainE, i++){
                                                     if(queryE->id() != (*trainE)->id()){
                                                         float overlaped = queryE->percentageOverlapped(*trainE);
-                                                        std::cout << "[BlockEntityDatabase] Overlapped percentage between " << queryE->id() << " and " << (*trainE)->id() << " : " << 
-                                                            overlaped << std::endl;
+                                                        // std::cout << "[BlockEntityDatabase] Overlapped percentage between " << queryE->id() << " and " << (*trainE)->id() << " : " << 
+                                                        //    overlaped << std::endl;
 
                                                         // if the entity overlaps with other created dont create a new one and update the first
                                                         if(overlaped > overlapScore_ && overlaped > affinity){
@@ -75,22 +75,22 @@ namespace dnn{
 
                                                 auto t2 = std::chrono::high_resolution_clock::now();
                                                 std::chrono::duration<float,std::milli> overlapTime = (t2 - t1);
-                                                std::cout << "[BlockEntityDatabase]Time checking overlaping between cubes: " << overlapTime.count()/1000 << std::endl;
+                                                // std::cout << "[BlockEntityDatabase]Time checking overlaping between cubes: " << overlapTime.count()/1000 << std::endl;
                                                 // create new entity associated to the most related parent
                                                 if(newEntity){
                                                     entities_[label].push_back(queryE);
                                                     newEntities.push_back(queryE);
-                                                    std::cout << "[BlockEntityDatabase] Created new entity " << queryE->id() << "(" << queryE->name() << ")" << std::endl;
+                                                    // std::cout << "[BlockEntityDatabase] Created new entity " << queryE->id() << "(" << queryE->name() << ")" << std::endl;
                                                 }
                                                 else{
                                                     // update entity 
                                                     parentEntity->update(queryE);
-                                                    std::cout << "[BlockEntityDatabase] Updated entity " << parentEntity->id() << "(" << parentEntity->name() << ")" << "  overlaped% " << affinity << " and creating words" << std::endl;
+                                                    // std::cout << "[BlockEntityDatabase] Updated entity " << parentEntity->id() << "(" << parentEntity->name() << ")" << "  overlaped% " << affinity << " and creating words" << std::endl;
                                                     parentEntity->createWords();
                                                     // create new matches inside entity features
                                                     if(reinforceEntity(parentEntity)){
                                                         // create new words with the new matches
-                                                        std::cout << "[BlockEntityDatabase] Finished entity " << parentEntity->id() << "(" << parentEntity->name() << ")" << " reinforce" << std::endl;
+                                                        // std::cout << "[BlockEntityDatabase] Finished entity " << parentEntity->id() << "(" << parentEntity->name() << ")" << " reinforce" << std::endl;
                                                     }
                                                     if(parentEntity->dfs().size() > 3 && parentEntity->words().size() > 30)
                                                         entitiesToOptimize.push_back(parentEntity);
@@ -99,7 +99,7 @@ namespace dnn{
                                         }else{
                                             for(auto e: entities){
                                                 entities_[e->label()].push_back(e);
-                                                std::cout << "[BlockEntityDatabase] Added entity " << e->id() << "(" << e->name() << ")" << " to database" << std::endl; 
+                                                // std::cout << "[BlockEntityDatabase] Added entity " << e->id() << "(" << e->name() << ")" << " to database" << std::endl; 
                                                 newEntities.push_back(e);
                                                 // check overlapping here maybe
                                             }
@@ -113,8 +113,10 @@ namespace dnn{
                                         }
                                         getPipe("Entities")->flush(newEntities);
 
-                                        if(entitiesToOptimize.size() > 0)
+                                        if(entitiesToOptimize.size() > 0){
+                                            std::cout << "[BlockEntityDatabase] Sending " << entitiesToOptimize.size() << " entities to optimize" << std::endl;
                                             getPipe("Entities to optimize")->flush(entitiesToOptimize);
+                                        }
 
                                         idle_ = true;
                                         #endif

@@ -197,8 +197,7 @@ namespace dnn{
                                                                 int y1 = detection[3] ;
                                                                 int x2 = detection[2] + width;
                                                                 int y2 = detection[3] + heigth;
-                                                                std::cout << "[BlockDarknet] Center Point " << center.x << " " << center.y << " " << center.z << " " 
-                                                                            << " radius " << radiusSearch_ << std::endl;     // 666 currently hardcoded
+
 
                                                                 // min cut clustering
                                                                 mico::minCutSegmentation<pcl::PointXYZRGBNormal>(entityCloud, cloud_out, center, radiusSearch_, 
@@ -254,7 +253,7 @@ namespace dnn{
                                             // send entities
                                             if(entities.size() > 0 && getPipe("Entities")->registrations() !=0 ){
                                                 getPipe("Entities")->flush(entities);
-                                                std::cout << "[BlockDarknet] Flushed " << entities.size() << " entities" << std::endl;
+                                                // std::cout << "[BlockDarknet] Flushed " << entities.size() << " entities" << std::endl;
 
                                             }
                                             // send image with detections

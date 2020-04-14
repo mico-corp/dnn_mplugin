@@ -40,15 +40,15 @@ namespace dnn{
                                         auto entities = _data.get<std::vector<std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>>>("Entities"); 
                                         // store the new entities
                                         std::vector<std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>> optimizedEntities;
-
                                         for(auto &e: entities){
                                             // map of dataframes with the words
                                             std::map<int, mico::Dataframe<pcl::PointXYZRGBNormal>::Ptr> dfMap;
                                             for(auto &df: e->dfMap()){
                                                 dfMap[df.first] = df.second;
                                             }
-                                            std::cout << "\034[1;31m[BlockEntityDatabase] Entity: " << e->id() <<  " (" << e->name() << ") optimizing with " 
-                                                        << dfMap.size() << " dataframes and " << e->words().size() << " words\034[0m" << std::endl;
+
+                                            std::cout << "\033[1;34m[BlockEntityDatabase] Entity: " << e->id() <<  " (" << e->name() << ") optimizing with " 
+                                                        << dfMap.size() << " dataframes and " << e->words().size() << " words \033[0m" << std::endl;
                                             
                                             optimizer_.sequence(dfMap);
                                             optimizer_.optimize();
