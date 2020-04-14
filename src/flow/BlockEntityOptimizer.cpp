@@ -49,9 +49,18 @@ namespace dnn{
 
                                             std::cout << "\033[1;34m[BlockEntityDatabase] Entity: " << e->id() <<  " (" << e->name() << ") optimizing with " 
                                                         << dfMap.size() << " dataframes and " << e->words().size() << " words \033[0m" << std::endl;
-                                            
+
                                             optimizer_.sequence(dfMap);
                                             optimizer_.optimize();
+
+                                            // update dataframe poses
+                                            for(auto df: dfMap){
+                                                auto pose = df.second->pose();
+                                                e->pose(df.first, pose);
+                                            }
+                                            // re-compute entity pose and cube
+                                            int firstDfId = e->dfs()[0];
+                                            e->computePose(firstDfId);
                                         }
 
                                         getPipe("Entities")->flush(optimizedEntities);
