@@ -24,6 +24,7 @@
 #include <mico/dnn/flow/BlockDarknet.h>
 #include <mico/dnn/flow/BlockEntityDatabase.h>
 #include <mico/dnn/flow/BlockEntityOptimizer.h>
+#include <mico/dnn/flow/BlockEntityInspector.h>
 
 FLOW_TYPE_REGISTER(entity, std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>)
 FLOW_TYPE_REGISTER(v_entity, std::vector<std::shared_ptr<dnn::Entity<pcl::PointXYZRGBNormal>>>)
@@ -32,9 +33,10 @@ namespace dnn{
     extern "C" flow::PluginNodeCreator* factory(){
             flow::PluginNodeCreator *creator = new flow::PluginNodeCreator;
 
-            creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<dnn::BlockDarknet>>();               }, "DNN");
-            creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<dnn::BlockEntityDatabase>>();        }, "DNN");
-            creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<dnn::BlockEntityOptimizer>>();        }, "DNN");
+            creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<dnn::BlockDarknet>>();         }, "DNN");
+            creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<dnn::BlockEntityDatabase>>();  }, "DNN");
+            creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<dnn::BlockEntityOptimizer>>(); }, "DNN");
+            creator->registerNodeCreator([](){ return std::make_unique<flow::FlowVisualBlock<dnn::BlockEntityInspector>>(); }, "DNN");
 
             return creator;
         }
