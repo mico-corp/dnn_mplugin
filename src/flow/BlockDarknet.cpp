@@ -187,6 +187,8 @@ namespace dnn{
                                                             pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_out(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
                                                             if(radiusFilter_){
                                                                 mico::radiusFilter<pcl::PointXYZRGBNormal>(entityCloud, cloud_out, radiusSearch_, minNeighbors_);
+                                                            }else if(passThroughFilter_){
+                                                                mico::passThroughFilter<pcl::PointXYZRGBNormal>(entityCloud, cloud_out);
                                                             }else if(minCutFilter_){
 
                                                                 // estimate entity radius
@@ -312,8 +314,13 @@ namespace dnn{
                     std::istringstream istr(_params["minimum_neighbors"]);
                     istr >> minNeighbors_;
                 }
-            }
-            else if(p.first == "Min_cut_filter"){
+            }else if(p.first == "passthough_filter"){
+                if(!p.second.compare("true")){ 
+                    passThroughFilter_ = true;
+                }else{
+                    passThroughFilter_ = false;
+                }
+            }else if(p.first == "Min_cut_filter"){
                 if(!p.second.compare("true")){
                     minCutFilter_ = true;
                 }else{
@@ -375,7 +382,7 @@ namespace dnn{
     }
     
     std::vector<std::string> BlockDarknet::parameters(){
-        return {"cfg", "weights", "names", "confidence_threshold", "dense_cloud", "radius_filter", "radius_search", "minimum_neighbors","Min_cut_filter","store_clouds"};
+        return {"cfg", "weights", "names", "confidence_threshold", "dense_cloud", "radius_filter", "radius_search", "minimum_neighbors","passthough_filter","Min_cut_filter","store_clouds"};
     }
 
     void BlockDarknet::objects_names_from_file(std::string const filename){

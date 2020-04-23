@@ -47,9 +47,10 @@ namespace dnn{
         std::string description() const override {return    "Block that implements darknet deep neuronal network for multiple 2D object detection.\n"
                                                             "   - Inputs: Confidence threshold: Minimun confidence treshold to detect an object \n"
                                                             "             Dense cloud: (true/false) Use dense cloud or feature cloud \n"
-                                                            "             Radius removal: (true/false) Aply filter removal \n"
+                                                            "             Radius removal: (true/false) Apply filter removal \n"
                                                             "             Radius search: (0.1) Radius in meters to search neighbors \n"
                                                             "             Minimum neighbors: (20) Minimun neighbors in a radius to be considered inliner \n"
+                                                            "             PassThrough filter Z axis: (true/false) Apply filter \n"
                                                             "   - Outputs: \n"
                                                             "              Color Image: Color image with detected objects in a bounding box \n"
                                                             "              Entities: Vector of entities \n";};
@@ -69,6 +70,9 @@ namespace dnn{
         bool radiusFilter_ = false;
         double radiusSearch_ = 0.1;
         int minNeighbors_ = 20;
+
+        // Pass through filter in Z axis
+        bool passThroughFilter_ = false;
 
         // min cut filter parameters
         bool minCutFilter_ = false;
