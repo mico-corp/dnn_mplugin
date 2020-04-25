@@ -73,6 +73,8 @@ namespace dnn{
 
         // Pass through filter in Z axis
         bool passThroughFilter_ = false;
+        float euclideanClusterTol_ = 0.02;
+        int euclideanClusterMinSize_ = 2000;
 
         // min cut filter parameters
         bool minCutFilter_ = false;

@@ -188,7 +188,9 @@ namespace dnn{
                                                             if(radiusFilter_){
                                                                 mico::radiusFilter<pcl::PointXYZRGBNormal>(entityCloud, cloud_out, radiusSearch_, minNeighbors_);
                                                             }else if(passThroughFilter_){
-                                                                mico::passThroughFilter<pcl::PointXYZRGBNormal>(entityCloud, cloud_out);
+                                                                pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr aux_cloud(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
+                                                                mico::passThroughFilter<pcl::PointXYZRGBNormal>(entityCloud, aux_cloud);
+                                                                mico::euclideanClustering<pcl::PointXYZRGBNormal>(aux_cloud, euclideanClusterTol_, euclideanClusterMinSize_, cloud_out);
                                                             }else if(minCutFilter_){
 
                                                                 // estimate entity radius
@@ -230,11 +232,11 @@ namespace dnn{
                                                                     }
                                                                     // save cloud, left and depth image.
                                                                     if(storeClouds_){
-                                                                        std::string fileCloudName = "EntityCloud" + boost::to_string(numEntities_) + ".pcd";
+                                                                        std::string fileCloudName = "EntityCloud" + std::to_string(numEntities_) + ".pcd";
                                                                         pcl::io::savePCDFileASCII(fileCloudName, *cloud_out);
 
-                                                                        std::string fileLeftName = "EntityLeft" + boost::to_string(numEntities_) + ".png";
-                                                                        std::string fileDepthName = "EntityDepth" + boost::to_string(numEntities_) + ".png";
+                                                                        std::string fileLeftName = "EntityLeft" + std::to_string(numEntities_) + ".png";
+                                                                        std::string fileDepthName = "EntityDepth" + std::to_string(numEntities_) + ".png";
 
                                                                         cv::Mat left = df->leftImage().clone();
                                                                         cv::Mat depth = df->depthImage().clone();
