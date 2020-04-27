@@ -28,6 +28,9 @@
 #include <iostream>
 #include <experimental/filesystem>
 #include <pcl/common/geometry.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/common/io.h>
 namespace dnn{
 
     BlockDarknet::BlockDarknet(){
@@ -190,7 +193,13 @@ namespace dnn{
                                                             }else if(passThroughFilter_){
                                                                 pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr aux_cloud(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
                                                                 mico::passThroughFilter<pcl::PointXYZRGBNormal>(entityCloud, aux_cloud);
-                                                                mico::euclideanClustering<pcl::PointXYZRGBNormal>(aux_cloud, euclideanClusterTol_, euclideanClusterMinSize_, cloud_out);
+                                                                if (aux_cloud->size() > 4000){
+                                                                    bool success = mico::euclideanClustering<pcl::PointXYZRGBNormal>(aux_cloud, euclideanClusterTol_, euclideanClusterMinSize_, cloud_out);
+                                                                    if (!success)
+                                                                        pcl::copyPointCloud(*aux_cloud, *cloud_out);
+                                                                }else{
+                                                                    pcl::copyPointCloud(*aux_cloud, *cloud_out);
+                                                                }                                                            
                                                             }else if(minCutFilter_){
 
                                                                 // estimate entity radius
