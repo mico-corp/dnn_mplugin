@@ -416,6 +416,9 @@ namespace dnn {
 
                 auto pclPoint = (*transformedFeatureCloud)[inlierIdxInTrain];
                 std::vector<float> point = {pclPoint.x, pclPoint.y, pclPoint.z};
+                if ( !(descriptors_.count(inlierIdxInTrain) > 0) ){
+                    return;
+                }
                 auto descriptor = descriptors(_trainDfId).row(inlierIdxInTrain);
                 auto newWord = std::shared_ptr<mico::Word<PointType_>>(new mico::Word<PointType_>(wordId, point, descriptor));
 
