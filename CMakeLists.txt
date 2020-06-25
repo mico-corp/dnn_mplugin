@@ -138,7 +138,7 @@ install(EXPORT ${PLUGIN_NAME}-targets
 )
 
 configure_file(
-    "${CMAKE_SOURCE_DIR}/cmake/templates/${PLUGIN_NAME}-config.cmake.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/${PLUGIN_NAME}-config.cmake.in"
 	"${CMAKE_BINARY_DIR}/${PLUGIN_NAME}-config.cmake"
 	@ONLY
 )
@@ -175,8 +175,10 @@ if(NOT TARGET uninstall)
     add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake) 
 endif() 
 
-# FLOW INSTALL target 
-add_custom_target(flow_install
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/lib${PLUGIN_NAME}.so 
-                                     $ENV{HOME}/.flow/plugins/lib${PLUGIN_NAME}.so
-)
+# FLOW INSTALL target
+if(NOT TARGET flow_install) 
+	add_custom_target(flow_install
+	    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/lib${PLUGIN_NAME}.so 
+	                                     $ENV{HOME}/.flow/plugins/lib${PLUGIN_NAME}.so
+	)
+endif()
