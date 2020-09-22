@@ -370,8 +370,18 @@ namespace dnn{
         #endif
     }
     
-    std::vector<std::string> BlockDarknet::parameters(){
-        return {"cfg", "weights", "names", "confidence_threshold", "dense_cloud", "radius_filter", "radius_search", "minimum_neighbors","Min_cut_filter","store_clouds"};
+    std::vector<std::pair<std::string, flow::Block::eParameterType>> BlockDarknet::parameters(){
+        return {    {"cfg", flow::Block::eParameterType::STRING}, 
+                    {"weights", flow::Block::eParameterType::STRING}, 
+                    {"names", flow::Block::eParameterType::STRING}, 
+                    {"confidence_threshold", flow::Block::eParameterType::DECIMAL}, 
+                    {"dense_cloud", flow::Block::eParameterType::BOOLEAN}, 
+                    {"radius_filter", flow::Block::eParameterType::DECIMAL}, 
+                    {"radius_search", flow::Block::eParameterType::DECIMAL}, 
+                    {"minimum_neighbors", flow::Block::eParameterType::INTEGER},
+                    {"Min_cut_filter", flow::Block::eParameterType::DECIMAL},
+                    {"store_clouds", flow::Block::eParameterType::BOOLEAN}
+                    };
     }
 
     void BlockDarknet::objects_names_from_file(std::string const filename){
