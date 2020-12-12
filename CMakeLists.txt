@@ -30,6 +30,7 @@ set(PLUGIN_NAME ${PROJECT_NAME}-dnn)
 file(GLOB_RECURSE MICO_DNN_SOURCE_FILES "src/*.cpp" "src/*.c")
 file(GLOB_RECURSE MICO_DNN_HEADER_FILES "include/*.h" "include/*.inl")
  
+SET(MICO_MODULES ${MICO_MODULES} dnn PARENT_SCOPE)
 add_library(${PLUGIN_NAME} SHARED ${MICO_DNN_HEADER_FILES} ${MICO_DNN_SOURCE_FILES})
 target_compile_features(${PLUGIN_NAME} PUBLIC cxx_std_17)
 target_include_directories(${PLUGIN_NAME}
