@@ -268,7 +268,7 @@ namespace dnn{
                                 });
     }
 
-    bool BlockDarknet::configure(std::unordered_map<std::string, std::string> _params){        
+    bool BlockDarknet::configure(std::vector<flow::ConfigParameterDef> _params){        
         #ifdef HAS_DARKNET
         std::string cfgFile;
         std::string weightsFile;
@@ -370,17 +370,17 @@ namespace dnn{
         #endif
     }
     
-    std::vector<std::pair<std::string, flow::Block::eParameterType>> BlockDarknet::parameters(){
-        return {    {"cfg", flow::Block::eParameterType::STRING}, 
-                    {"weights", flow::Block::eParameterType::STRING}, 
-                    {"names", flow::Block::eParameterType::STRING}, 
-                    {"confidence_threshold", flow::Block::eParameterType::DECIMAL}, 
-                    {"dense_cloud", flow::Block::eParameterType::BOOLEAN}, 
-                    {"radius_filter", flow::Block::eParameterType::DECIMAL}, 
-                    {"radius_search", flow::Block::eParameterType::DECIMAL}, 
-                    {"minimum_neighbors", flow::Block::eParameterType::INTEGER},
-                    {"Min_cut_filter", flow::Block::eParameterType::DECIMAL},
-                    {"store_clouds", flow::Block::eParameterType::BOOLEAN}
+    std::vector<flow::ConfigParameterDef> BlockDarknet::parameters(){
+        return {    {"cfg", flow::ConfigParameterDef::eParameterType::STRING}, 
+                    {"weights", flow::ConfigParameterDef::eParameterType::STRING}, 
+                    {"names", flow::ConfigParameterDef::eParameterType::STRING}, 
+                    {"confidence_threshold", flow::ConfigParameterDef::eParameterType::DECIMAL}, 
+                    {"dense_cloud", flow::ConfigParameterDef::eParameterType::BOOLEAN}, 
+                    {"radius_filter", flow::ConfigParameterDef::eParameterType::DECIMAL}, 
+                    {"radius_search", flow::ConfigParameterDef::eParameterType::DECIMAL}, 
+                    {"minimum_neighbors", flow::ConfigParameterDef::eParameterType::INTEGER},
+                    {"Min_cut_filter", flow::ConfigParameterDef::eParameterType::DECIMAL},
+                    {"store_clouds", flow::ConfigParameterDef::eParameterType::BOOLEAN}
                     };
     }
 

@@ -103,7 +103,7 @@ namespace dnn{
     // BlockEntityDatabase::~BlockEntityDatabase(){
     // } 
 
-    bool BlockEntityDatabase::configure(std::unordered_map<std::string, std::string> _params){
+    bool BlockEntityDatabase::configure(std::vector<flow::ConfigParameterDef> _params){
         cjson::Json jParams;
         for(auto &param: _params){
             if(param.second == "")
