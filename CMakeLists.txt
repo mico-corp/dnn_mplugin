@@ -117,10 +117,6 @@ endif(DOXYGEN_FOUND)
 ##################################################
 include(CMakePackageConfigHelpers)
 
-if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/usr/local")
-endif() 
-
 install(TARGETS darknet
       EXPORT ${PLUGIN_NAME}-targets
       COMPONENT ${PLUGIN_NAME}
