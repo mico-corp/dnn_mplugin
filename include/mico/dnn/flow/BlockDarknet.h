@@ -35,15 +35,18 @@ namespace dnn{
 
     class BlockDarknet: public flow::Block{
     public:
+        /// Get name of block
         virtual std::string name() const override {return "Darknet";}
 
         BlockDarknet();
         // ~BlockDarknet(){};
 
         bool configure(std::vector<flow::ConfigParameterDef> _params) override;
+        /// Get list of parameters of the block
         std::vector<flow::ConfigParameterDef> parameters() override;
 
 
+        /// Returns a brief description of the block
         std::string description() const override {return    "Block that implements darknet deep neuronal network for multiple 2D object detection.\n"
                                                             "   - Inputs: Confidence threshold: Minimun confidence treshold to detect an object \n"
                                                             "             Dense cloud: (true/false) Use dense cloud or feature cloud \n"
